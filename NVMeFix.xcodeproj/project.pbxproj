@@ -1,0 +1,456 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FAEE25A23AE266E00185076 /* NVMeFix.cpp */; };
+		2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F77373A23AE401900C87C16 /* plugin_start.cpp */; };
+		2F77376023AE406400C87C16 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F77372F23AE401900C87C16 /* libkmod.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2F7736C823AE333800C87C16 /* nvme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nvme.h; sourceTree = "<group>"; };
+		2F77372F23AE401900C87C16 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkmod.a; sourceTree = "<group>"; };
+		2F77373123AE401900C87C16 /* entry64.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry64.S; sourceTree = "<group>"; };
+		2F77373223AE401900C87C16 /* build.tool */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = build.tool; sourceTree = "<group>"; };
+		2F77373323AE401900C87C16 /* entry32.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry32.S; sourceTree = "<group>"; };
+		2F77373423AE401900C87C16 /* wrappers.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = wrappers.inc; sourceTree = "<group>"; };
+		2F77373623AE401900C87C16 /* mac_framework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mac_framework.h; sourceTree = "<group>"; };
+		2F77373723AE401900C87C16 /* mac_policy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mac_policy.h; sourceTree = "<group>"; };
+		2F77373823AE401900C87C16 /* _label.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = _label.h; sourceTree = "<group>"; };
+		2F77373923AE401900C87C16 /* LegacyLibkernMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyLibkernMacros.h; sourceTree = "<group>"; };
+		2F77373A23AE401900C87C16 /* plugin_start.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = plugin_start.cpp; sourceTree = "<group>"; };
+		2F77373B23AE401900C87C16 /* LegacyIOService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyIOService.h; sourceTree = "<group>"; };
+		2F77373D23AE401900C87C16 /* kern_config.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_config.hpp; sourceTree = "<group>"; };
+		2F77373E23AE401900C87C16 /* kern_atomic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_atomic.hpp; sourceTree = "<group>"; };
+		2F77373F23AE401900C87C16 /* kern_time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_time.hpp; sourceTree = "<group>"; };
+		2F77374023AE401900C87C16 /* kern_nvram.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_nvram.hpp; sourceTree = "<group>"; };
+		2F77374123AE401900C87C16 /* kern_cpu.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_cpu.hpp; sourceTree = "<group>"; };
+		2F77374223AE401900C87C16 /* kern_devinfo.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_devinfo.hpp; sourceTree = "<group>"; };
+		2F77374323AE401900C87C16 /* kern_efi.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_efi.hpp; sourceTree = "<group>"; };
+		2F77374423AE401900C87C16 /* kern_policy.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_policy.hpp; sourceTree = "<group>"; };
+		2F77374523AE401900C87C16 /* kern_user.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_user.hpp; sourceTree = "<group>"; };
+		2F77374623AE401900C87C16 /* plugin_start.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = plugin_start.hpp; sourceTree = "<group>"; };
+		2F77374723AE401900C87C16 /* kern_iokit.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_iokit.hpp; sourceTree = "<group>"; };
+		2F77374823AE401900C87C16 /* kern_crypto.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_crypto.hpp; sourceTree = "<group>"; };
+		2F77374923AE401900C87C16 /* kern_mach.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_mach.hpp; sourceTree = "<group>"; };
+		2F77374A23AE401900C87C16 /* kern_compression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_compression.hpp; sourceTree = "<group>"; };
+		2F77374B23AE401900C87C16 /* kern_file.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_file.hpp; sourceTree = "<group>"; };
+		2F77374C23AE401900C87C16 /* kern_rtc.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_rtc.hpp; sourceTree = "<group>"; };
+		2F77374D23AE401900C87C16 /* kern_disasm.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_disasm.hpp; sourceTree = "<group>"; };
+		2F77374F23AE401900C87C16 /* capstone.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = capstone.h; sourceTree = "<group>"; };
+		2F77375023AE401900C87C16 /* mips.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mips.h; sourceTree = "<group>"; };
+		2F77375123AE401900C87C16 /* sparc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sparc.h; sourceTree = "<group>"; };
+		2F77375223AE401900C87C16 /* systemz.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = systemz.h; sourceTree = "<group>"; };
+		2F77375323AE401900C87C16 /* arm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arm.h; sourceTree = "<group>"; };
+		2F77375423AE401900C87C16 /* x86.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = x86.h; sourceTree = "<group>"; };
+		2F77375523AE401900C87C16 /* ppc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ppc.h; sourceTree = "<group>"; };
+		2F77375623AE401900C87C16 /* arm64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arm64.h; sourceTree = "<group>"; };
+		2F77375723AE401900C87C16 /* xcore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xcore.h; sourceTree = "<group>"; };
+		2F77375823AE401900C87C16 /* platform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform.h; sourceTree = "<group>"; };
+		2F77375923AE401900C87C16 /* kern_patcher.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_patcher.hpp; sourceTree = "<group>"; };
+		2F77375A23AE401900C87C16 /* kern_compat.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_compat.hpp; sourceTree = "<group>"; };
+		2F77375B23AE401900C87C16 /* kern_api.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_api.hpp; sourceTree = "<group>"; };
+		2F77375C23AE401900C87C16 /* kern_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_util.hpp; sourceTree = "<group>"; };
+		2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NVMeFixPlugin.hpp; sourceTree = "<group>"; };
+		2FAEE25A23AE266E00185076 /* NVMeFix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NVMeFix.cpp; sourceTree = "<group>"; };
+		2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVMeFix.kext; sourceTree = BUILT_PRODUCTS_DIR; };
+		2FF3E71423AE1DA100D8CDEB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2F77375E23AE405A00C87C16 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F77376023AE406400C87C16 /* libkmod.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2F77372D23AE401900C87C16 /* Lilu */ = {
+			isa = PBXGroup;
+			children = (
+				2F77372E23AE401900C87C16 /* Library */,
+				2F77373C23AE401900C87C16 /* Headers */,
+			);
+			name = Lilu;
+			path = Lilu.kext/Contents/Resources;
+			sourceTree = "<group>";
+		};
+		2F77372E23AE401900C87C16 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				2F77372F23AE401900C87C16 /* libkmod.a */,
+				2F77373023AE401900C87C16 /* wrappers */,
+				2F77373523AE401900C87C16 /* security */,
+				2F77373923AE401900C87C16 /* LegacyLibkernMacros.h */,
+				2F77373A23AE401900C87C16 /* plugin_start.cpp */,
+				2F77373B23AE401900C87C16 /* LegacyIOService.h */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
+		2F77373023AE401900C87C16 /* wrappers */ = {
+			isa = PBXGroup;
+			children = (
+				2F77373123AE401900C87C16 /* entry64.S */,
+				2F77373223AE401900C87C16 /* build.tool */,
+				2F77373323AE401900C87C16 /* entry32.S */,
+				2F77373423AE401900C87C16 /* wrappers.inc */,
+			);
+			path = wrappers;
+			sourceTree = "<group>";
+		};
+		2F77373523AE401900C87C16 /* security */ = {
+			isa = PBXGroup;
+			children = (
+				2F77373623AE401900C87C16 /* mac_framework.h */,
+				2F77373723AE401900C87C16 /* mac_policy.h */,
+				2F77373823AE401900C87C16 /* _label.h */,
+			);
+			path = security;
+			sourceTree = "<group>";
+		};
+		2F77373C23AE401900C87C16 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				2F77373D23AE401900C87C16 /* kern_config.hpp */,
+				2F77373E23AE401900C87C16 /* kern_atomic.hpp */,
+				2F77373F23AE401900C87C16 /* kern_time.hpp */,
+				2F77374023AE401900C87C16 /* kern_nvram.hpp */,
+				2F77374123AE401900C87C16 /* kern_cpu.hpp */,
+				2F77374223AE401900C87C16 /* kern_devinfo.hpp */,
+				2F77374323AE401900C87C16 /* kern_efi.hpp */,
+				2F77374423AE401900C87C16 /* kern_policy.hpp */,
+				2F77374523AE401900C87C16 /* kern_user.hpp */,
+				2F77374623AE401900C87C16 /* plugin_start.hpp */,
+				2F77374723AE401900C87C16 /* kern_iokit.hpp */,
+				2F77374823AE401900C87C16 /* kern_crypto.hpp */,
+				2F77374923AE401900C87C16 /* kern_mach.hpp */,
+				2F77374A23AE401900C87C16 /* kern_compression.hpp */,
+				2F77374B23AE401900C87C16 /* kern_file.hpp */,
+				2F77374C23AE401900C87C16 /* kern_rtc.hpp */,
+				2F77374D23AE401900C87C16 /* kern_disasm.hpp */,
+				2F77374E23AE401900C87C16 /* capstone */,
+				2F77375923AE401900C87C16 /* kern_patcher.hpp */,
+				2F77375A23AE401900C87C16 /* kern_compat.hpp */,
+				2F77375B23AE401900C87C16 /* kern_api.hpp */,
+				2F77375C23AE401900C87C16 /* kern_util.hpp */,
+			);
+			path = Headers;
+			sourceTree = "<group>";
+		};
+		2F77374E23AE401900C87C16 /* capstone */ = {
+			isa = PBXGroup;
+			children = (
+				2F77374F23AE401900C87C16 /* capstone.h */,
+				2F77375023AE401900C87C16 /* mips.h */,
+				2F77375123AE401900C87C16 /* sparc.h */,
+				2F77375223AE401900C87C16 /* systemz.h */,
+				2F77375323AE401900C87C16 /* arm.h */,
+				2F77375423AE401900C87C16 /* x86.h */,
+				2F77375523AE401900C87C16 /* ppc.h */,
+				2F77375623AE401900C87C16 /* arm64.h */,
+				2F77375723AE401900C87C16 /* xcore.h */,
+				2F77375823AE401900C87C16 /* platform.h */,
+			);
+			path = capstone;
+			sourceTree = "<group>";
+		};
+		2F77375F23AE406400C87C16 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2FF3E70523AE1DA100D8CDEB = {
+			isa = PBXGroup;
+			children = (
+				2FF3E71123AE1DA100D8CDEB /* NVMeFix */,
+				2FF3E71023AE1DA100D8CDEB /* Products */,
+				2F77372D23AE401900C87C16 /* Lilu */,
+				2F77375F23AE406400C87C16 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		2FF3E71023AE1DA100D8CDEB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2FF3E71123AE1DA100D8CDEB /* NVMeFix */ = {
+			isa = PBXGroup;
+			children = (
+				2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */,
+				2FAEE25A23AE266E00185076 /* NVMeFix.cpp */,
+				2F7736C823AE333800C87C16 /* nvme.h */,
+				2FF3E71423AE1DA100D8CDEB /* Info.plist */,
+			);
+			path = NVMeFix;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2FF3E70E23AE1DA100D8CDEB /* NVMeFix */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2FF3E71723AE1DA100D8CDEB /* Build configuration list for PBXNativeTarget "NVMeFix" */;
+			buildPhases = (
+				2F7736C623AE2BF500C87C16 /* Sources */,
+				2F77375E23AE405A00C87C16 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NVMeFix;
+			productName = NVMeFix;
+			productReference = 2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */;
+			productType = "com.apple.product-type.kernel-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2FF3E70623AE1DA100D8CDEB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1120;
+				ORGANIZATIONNAME = acidanthera;
+				TargetAttributes = {
+					2FF3E70E23AE1DA100D8CDEB = {
+						CreatedOnToolsVersion = 11.2;
+					};
+				};
+			};
+			buildConfigurationList = 2FF3E70923AE1DA100D8CDEB /* Build configuration list for PBXProject "NVMeFix" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2FF3E70523AE1DA100D8CDEB;
+			productRefGroup = 2FF3E71023AE1DA100D8CDEB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2FF3E70E23AE1DA100D8CDEB /* NVMeFix */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2F7736C623AE2BF500C87C16 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */,
+				2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2FF3E71523AE1DA100D8CDEB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		2FF3E71623AE1DA100D8CDEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		2FF3E71823AE1DA100D8CDEB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				COMPILER_INDEX_STORE_ENABLE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"MODULE_VERSION=$(MODULE_VERSION)",
+					"PRODUCT_NAME=$(PRODUCT_NAME)",
+					MACH_ASSERT,
+					"$(inherited)",
+					LILU_CUSTOM_IOKIT_INIT,
+				);
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources/";
+				INFOPLIST_FILE = NVMeFix/Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Lilu.kext/Contents/Resources/Library",
+				);
+				MODULE_NAME = org.NVMeFix;
+				MODULE_START = NVMeFix_kern_start;
+				MODULE_STOP = NVMeFix_kern_stop;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Debug;
+		};
+		2FF3E71923AE1DA100D8CDEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				COMPILER_INDEX_STORE_ENABLE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"PRODUCT_NAME=$(PRODUCT_NAME)",
+					"MODULE_VERSION=$(MODULE_VERSION)",
+					LILU_CUSTOM_IOKIT_INIT,
+				);
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources/";
+				INFOPLIST_FILE = NVMeFix/Info.plist;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Lilu.kext/Contents/Resources/Library",
+				);
+				MODULE_NAME = org.NVMeFix;
+				MODULE_START = NVMeFix_kern_start;
+				MODULE_STOP = NVMeFix_kern_stop;
+				MODULE_VERSION = 1.0.0d1;
+				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = kext;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2FF3E70923AE1DA100D8CDEB /* Build configuration list for PBXProject "NVMeFix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF3E71523AE1DA100D8CDEB /* Debug */,
+				2FF3E71623AE1DA100D8CDEB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2FF3E71723AE1DA100D8CDEB /* Build configuration list for PBXNativeTarget "NVMeFix" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FF3E71823AE1DA100D8CDEB /* Debug */,
+				2FF3E71923AE1DA100D8CDEB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2FF3E70623AE1DA100D8CDEB /* Project object */;
+}
