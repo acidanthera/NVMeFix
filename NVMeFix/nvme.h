@@ -15,8 +15,10 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Definitions for the NVM Express interface
- * Copyright (c) 2011-2014, Intel Corporation.
+ * Portions Copyright (c) 2011-2014, Intel Corporation.
  */
+
+/* linux/include/linux/nvme.h */
 
 #ifndef nvme_h
 #define nvme_h

@@ -89,6 +89,10 @@ private:
 			"__ZN16AppleNVMeRequest23BuildCommandGetFeaturesEh"
 		};
 
+		Func<void,void*,uint8_t> AppleNVMeRequest__BuildCommandSetFeaturesCommon {
+			"__ZN16AppleNVMeRequest29BuildCommandSetFeaturesCommonEh"
+		};
+
 		Func<void,void*,void*> IONVMeController__ReturnRequest {
 			"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
 		};
@@ -99,6 +103,10 @@ private:
 
 		Func<uint32_t,void*> AppleNVMeRequest__GetOpcode {
 			"__ZN16AppleNVMeRequest9GetOpcodeEv"
+		};
+
+		Func<IOReturn,void*,uint64_t,uint64_t> AppleNVMeRequest__GenerateIOVMSegments {
+			"__ZN16AppleNVMeRequest20GenerateIOVMSegmentsEyy"
 		};
 	} kextFuncs;
 
@@ -123,8 +131,8 @@ private:
 
 		Member<uint32_t> AppleNVMeRequest__result;
 		Member<void*> AppleNVMeRequest__controller;
-		Member<NVMe::nvme_command*> AppleNVMeRequest__command;
-
+		Member<NVMe::nvme_command> AppleNVMeRequest__command;
+		Member<IOBufferMemoryDescriptor*> AppleNVMeRequest__prpDescriptor;
 	} kextMembers;
 
 	/*
@@ -142,7 +150,7 @@ private:
 	void handleControllers();
 	void handleController(ControllerEntry&);
 	IOReturn identify(ControllerEntry&,IOBufferMemoryDescriptor*&);
-	IOReturn configureAPST(ControllerEntry&);
+	IOReturn configureAPST(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 	IOReturn APSTenabled(ControllerEntry&, bool&);
 };
 
