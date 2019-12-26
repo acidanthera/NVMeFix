@@ -202,18 +202,18 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		return;
 	}
 
+#ifdef DEBUG
 	char mn[40];
 	lilu_os_memcpy(mn, ctrl->mn, sizeof(mn));
 	mn[sizeof(mn) - 1] = '\0';
 
-	SYSLOG("nvmef", "Identified model %s", mn);
+	DBGLOG("nvmef", "Identified model %s", mn);
 	DBGLOG("nvmef", "vid 0x%x ssvid 0x%x", ctrl->vid, ctrl->ssvid);
+#endif
 
 	bool apste {false};
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
-		SYSLOG("nvmef", "APST status %d", apste);
-	else
-		SYSLOG("nvmef", "Failed to get APST status");
+		DBGLOG("nvmef", "APST status %d", apste);
 
 	if (!apste) {
 		DBGLOG("nvmef", "Configuring APST");
@@ -222,7 +222,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
 	}
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
-		SYSLOG("nvmef", "APST status %d", apste);
+		DBGLOG("nvmef", "APST status %d", apste);
 
 	identifyDesc->release();
 }
