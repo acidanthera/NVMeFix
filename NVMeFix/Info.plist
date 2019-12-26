@@ -37,7 +37,7 @@
 		<key>com.apple.iokit.IOPCIFamily</key>
 		<string>1.0.0b1</string>
 		<key>as.vit9696.Lilu</key>
-		<string>1.2.0</string>
+		<string>1.4.1</string>
 	</dict>
 	<key>OSBundleRequired</key>
 	<string>Root</string>
