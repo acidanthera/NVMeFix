@@ -224,6 +224,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
 		DBGLOG("nvmef", "APST status %d", apste);
 
+	entry.controller->setProperty("apst", apste);
+
 	identifyDesc->release();
 }
 
