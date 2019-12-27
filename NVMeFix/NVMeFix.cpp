@@ -370,7 +370,6 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 	if (max_ps != -1) {
 		auto req = kextFuncs.IONVMeController__GetRequest(entry.controller, 1);
 
-		kextFuncs.AppleNVMeRequest__BuildCommandSetFeaturesCommon(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
 		if (!req) {
 			DBGLOG("apst", "IONVMeController::GetRequest failed");
 			ret = kIOReturnNoResources;
@@ -378,6 +377,8 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 			ret = reinterpret_cast<IODMACommand*>(req)->setMemoryDescriptor(apstDesc);
 
 		if (ret == kIOReturnSuccess) {
+			kextFuncs.AppleNVMeRequest__BuildCommandSetFeaturesCommon(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
+
 			kextMembers.AppleNVMeRequest__command.get(req)->features.dword11 = 1;
 			*kextMembers.AppleNVMeRequest__prpDescriptor.get(req) = apstDesc;
 			ret = reinterpret_cast<IODMACommand*>(req)->prepare(0, sizeof(*apstTable));
