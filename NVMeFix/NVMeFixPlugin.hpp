@@ -157,6 +157,7 @@ private:
 	IOReturn identify(ControllerEntry&,IOBufferMemoryDescriptor*&);
 	IOReturn configureAPST(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 	IOReturn APSTenabled(ControllerEntry&, bool&);
+	IOReturn dumpAPST(ControllerEntry&, int npss);
 };
 
 

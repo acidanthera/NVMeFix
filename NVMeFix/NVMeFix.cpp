@@ -212,8 +212,11 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 #endif
 
 	bool apste {false};
+
+#ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
 		DBGLOG("nvmef", "APST status %d", apste);
+#endif
 
 	if (!apste) {
 		DBGLOG("nvmef", "Configuring APST");
@@ -221,8 +224,13 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		if (res != kIOReturnSuccess)
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
 	}
-	if (APSTenabled(entry, apste) == kIOReturnSuccess)
+#ifdef DEBUG
+	if (APSTenabled(entry, apste) == kIOReturnSuccess) {
 		DBGLOG("nvmef", "APST status %d", apste);
+	}
+	if (apste && dumpAPST(entry, ctrl->npss))
+		DBGLOG("nvmef", "Failed to dump APST table");
+#endif
 
 	entry.controller->setProperty("apst", apste);
 
@@ -261,6 +269,8 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 fail:
 	if (prepared)
 		desc->complete();
+	if (ret != kIOReturnSuccess && desc)
+		desc->release();
 	return ret;
 }
 
@@ -428,6 +438,81 @@ IOReturn NVMeFixPlugin::APSTenabled(ControllerEntry& entry, bool& enabled) {
 	if (req)
 		kextFuncs.IONVMeController.ReturnRequest(entry.controller, static_cast<void*&&>(req));
 	return res;
+}
+
+IOReturn NVMeFixPlugin::dumpAPST(ControllerEntry& entry, int npss) {
+	assert(entry.controller);
+
+	void* req {nullptr};
+	auto ret = kIOReturnSuccess;
+	auto apstDesc = IOBufferMemoryDescriptor::withCapacity(sizeof(NVMe::nvme_feat_auto_pst),
+														   kIODirectionIn);
+	if (!apstDesc) {
+		SYSLOG("apst", "Failed to create APST table descriptor");
+		return kIOReturnNoResources;
+	}
+
+	auto apstTable = static_cast<NVMe::nvme_feat_auto_pst*>(apstDesc->getBytesNoCopy());
+	memset(apstTable, '\0', apstDesc->getLength());
+
+	bool descPrepared {false}, reqPrepared {false};
+
+	ret = apstDesc->prepare();
+	if (ret != kIOReturnSuccess) {
+		SYSLOG("apst", "Failed to prepare descriptor");
+		goto fail;
+	}
+	descPrepared = true;
+
+	req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1);
+	if (!req) {
+		DBGLOG("apst", "IONVMeController::GetRequest failed");
+		ret = kIOReturnNoResources;
+		goto fail;
+	}
+
+	ret = reinterpret_cast<IODMACommand*>(req)->setMemoryDescriptor(apstDesc);
+	if (ret != kIOReturnSuccess) {
+		DBGLOG("apst", "Failed to set memory descriptor");
+		goto fail;
+	}
+	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
+	*kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
+	*kextMembers.AppleNVMeRequest.prpDescriptor.get(req) = apstDesc;
+
+	ret = reinterpret_cast<IODMACommand*>(req)->prepare(0, sizeof(*apstTable));
+	if (ret != kIOReturnSuccess) {
+		DBGLOG("apst", "Failed to prepare DMA command");
+		goto fail;
+	}
+	reqPrepared = true;
+
+	ret = kextFuncs.AppleNVMeRequest.GenerateIOVMSegments(static_cast<void*&&>(req), 0, sizeof(*apstTable));
+	if (ret != kIOReturnSuccess) {
+		DBGLOG("apst", "Failed to generate IO VM segments");
+		goto fail;
+	}
+
+	ret = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller, static_cast<void*&&>(req));
+	if (ret != kIOReturnSuccess) {
+		DBGLOG("apst", "ProcessSyncNVMeRequest failed");
+		goto fail;
+	}
+
+	for (int state = npss; state >= 0; state--)
+		DBGLOG("apst", "entry %d : 0x%llx", state, apstTable->entries[state]);
+
+fail:
+	if (reqPrepared)
+		reinterpret_cast<IODMACommand*>(req)->complete();
+	if (req)
+		kextFuncs.IONVMeController.ReturnRequest(entry.controller, static_cast<void*&&>(req));
+
+	if (apstDesc && descPrepared)
+		apstDesc->complete();
+	if (apstDesc)
+		apstDesc->release();
+	return ret;
 }
 
 /* Notifications are serialized for a single controller, so we don't have to sync with removal */
