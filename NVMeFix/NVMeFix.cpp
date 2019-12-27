@@ -235,7 +235,7 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 	uint8_t* data {nullptr};
 	bool prepared {false};
 
-	desc = IOBufferMemoryDescriptor::withCapacity(4096, kIODirectionIn);
+	desc = IOBufferMemoryDescriptor::withCapacity(sizeof(NVMe::nvme_id_ctrl), kIODirectionIn);
 
 	if (!desc) {
 		SYSLOG("nvmef", "Failed to init descriptor");
