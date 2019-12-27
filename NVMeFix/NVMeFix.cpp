@@ -66,15 +66,15 @@ bool NVMeFixPlugin::solveSymbols() {
 		return false;
 
 	bool res = true;
-	res &= kextFuncs.IONVMeController__IssueIdentifyCommand.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController__ProcessSyncNVMeRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController__GetRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest__BuildCommandGetFeatures.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest__BuildCommandSetFeaturesCommon.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController__ReturnRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest__GetStatus.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest__GetOpcode.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest__GenerateIOVMSegments.solve(*kp, kextInfo.loadIndex);
+	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.GetRequest.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.ReturnRequest.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GetStatus.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GetOpcode.solve(*kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(*kp, kextInfo.loadIndex);
 
 	auto offsetFromFunc = [](auto start, auto opcode, auto reg, auto rm, size_t ninsts_max=128) {
 		assert(start);
@@ -98,24 +98,24 @@ bool NVMeFixPlugin::solveSymbols() {
 	};
 
 	/* mov eax, [rdi+0xA8] */
-	if (!kextMembers.AppleNVMeRequest__result.offs)
-		kextMembers.AppleNVMeRequest__result.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest__GetStatus.fptr,
+	if (!kextMembers.AppleNVMeRequest.result.offs)
+		kextMembers.AppleNVMeRequest.result.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
 															   0x8b, 0, 7) + 4;
-	kextMembers.AppleNVMeRequest__controller.offs = kextMembers.AppleNVMeRequest__result.offs - 12;
+	kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
 
 	/* movzx eax, byte ptr [rdi+0x10A] */
-	if (!kextMembers.AppleNVMeRequest__command.offs)
-		kextMembers.AppleNVMeRequest__command.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest__GetOpcode.fptr,
+	if (!kextMembers.AppleNVMeRequest.command.offs)
+		kextMembers.AppleNVMeRequest.command.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
 		0xf, 0, 7);
 
 	/* mov [rbx+0xC0], r12 */
-	if (!kextMembers.AppleNVMeRequest__prpDescriptor.offs)
-		kextMembers.AppleNVMeRequest__prpDescriptor.offs = offsetFromFunc(kextFuncs.IONVMeController__IssueIdentifyCommand.fptr, 0x89, 4, 3);
+	if (!kextMembers.AppleNVMeRequest.prpDescriptor.offs)
+		kextMembers.AppleNVMeRequest.prpDescriptor.offs = offsetFromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr, 0x89, 4, 3);
 
-	res &= kextMembers.AppleNVMeRequest__result.offs &&
-		kextMembers.AppleNVMeRequest__controller.offs &&
-		kextMembers.AppleNVMeRequest__command.offs &&
-		kextMembers.AppleNVMeRequest__prpDescriptor.offs;
+	res &= kextMembers.AppleNVMeRequest.result.offs &&
+		kextMembers.AppleNVMeRequest.controller.offs &&
+		kextMembers.AppleNVMeRequest.command.offs &&
+		kextMembers.AppleNVMeRequest.prpDescriptor.offs;
 	if (!res)
 		DBGLOG("nvmef", "Failed to solve symbols");
 	return res;
@@ -252,7 +252,7 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 	}
 	prepared = true;
 
-	ret = kextFuncs.IONVMeController__IssueIdentifyCommand(entry.controller, desc, nullptr, 0);
+	ret = kextFuncs.IONVMeController.IssueIdentifyCommand(entry.controller, desc, nullptr, 0);
 	if (ret != kIOReturnSuccess) {
 		SYSLOG("nvmef", "issueIdentifyCommand failed");
 		goto fail;
@@ -368,7 +368,7 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 	}
 
 	if (max_ps != -1) {
-		auto req = kextFuncs.IONVMeController__GetRequest(entry.controller, 1);
+		auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1);
 
 		if (!req) {
 			DBGLOG("apst", "IONVMeController::GetRequest failed");
@@ -377,29 +377,29 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 			ret = reinterpret_cast<IODMACommand*>(req)->setMemoryDescriptor(apstDesc);
 
 		if (ret == kIOReturnSuccess) {
-			kextFuncs.AppleNVMeRequest__BuildCommandSetFeaturesCommon(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
+			kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
 
-			kextMembers.AppleNVMeRequest__command.get(req)->features.dword11 = 1;
-			*kextMembers.AppleNVMeRequest__prpDescriptor.get(req) = apstDesc;
+			kextMembers.AppleNVMeRequest.command.get(req)->features.dword11 = 1;
+			*kextMembers.AppleNVMeRequest.prpDescriptor.get(req) = apstDesc;
 			ret = reinterpret_cast<IODMACommand*>(req)->prepare(0, sizeof(*apstTable));
 
 			if (ret != kIOReturnSuccess)
 				DBGLOG("apst", "Failed to prepare DMA command");
 			else {
-				ret = kextFuncs.AppleNVMeRequest__GenerateIOVMSegments(static_cast<void*&&>(req), 0, sizeof(*apstTable));
+				ret = kextFuncs.AppleNVMeRequest.GenerateIOVMSegments(static_cast<void*&&>(req), 0, sizeof(*apstTable));
 
 				if (ret != kIOReturnSuccess)
 					DBGLOG("apst", "Failed to generate IO VM segments");
 				else {
-					*kextMembers.AppleNVMeRequest__controller.get(req) = entry.controller;
+					*kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
 
-					ret = kextFuncs.IONVMeController__ProcessSyncNVMeRequest(entry.controller, static_cast<void*&&>(req));
+					ret = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller, static_cast<void*&&>(req));
 					if (ret != kIOReturnSuccess)
 						DBGLOG("apst", "ProcessSyncNVMeRequest failed");
 				}
 			}
 			reinterpret_cast<IODMACommand*>(req)->complete();
-			kextFuncs.IONVMeController__ReturnRequest(entry.controller, static_cast<void*&&>(req));
+			kextFuncs.IONVMeController.ReturnRequest(entry.controller, static_cast<void*&&>(req));
 		}
 	}
 
@@ -411,22 +411,22 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 }
 
 IOReturn NVMeFixPlugin::APSTenabled(ControllerEntry& entry, bool& enabled) {
-	auto req = kextFuncs.IONVMeController__GetRequest(entry.controller, 1);
+	auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1);
 
 	if (!req) {
 		SYSLOG("nvmef", "IONVMeController::GetRequest failed");
 		return kIOReturnNoResources;
 	}
 
-	*kextMembers.AppleNVMeRequest__controller.get(req) = entry.controller;
-	kextFuncs.AppleNVMeRequest__BuildCommandGetFeatures(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
+	*kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
+	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures(static_cast<void*&&>(req), NVMe::NVME_FEAT_AUTO_PST);
 
-	auto res = kextFuncs.IONVMeController__ProcessSyncNVMeRequest(entry.controller,
+	auto res = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller,
 																  static_cast<void*&&>(req));
 	if (res == kIOReturnSuccess)
-		enabled = *kextMembers.AppleNVMeRequest__result.get(req);
+		enabled = *kextMembers.AppleNVMeRequest.result.get(req);
 	if (req)
-		kextFuncs.IONVMeController__ReturnRequest(entry.controller, static_cast<void*&&>(req));
+		kextFuncs.IONVMeController.ReturnRequest(entry.controller, static_cast<void*&&>(req));
 	return res;
 }
 

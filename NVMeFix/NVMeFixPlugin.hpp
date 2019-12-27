@@ -73,41 +73,44 @@ private:
 			}
 		};
 
-		Func<IOReturn,void*,IOMemoryDescriptor*,void*,uint64_t> IONVMeController__IssueIdentifyCommand {
-			"__ZN16IONVMeController20IssueIdentifyCommandEP18IOMemoryDescriptorP16AppleNVMeRequestj"
-		};
+		struct {
+			Func<IOReturn,void*,IOMemoryDescriptor*,void*,uint64_t> IssueIdentifyCommand {
+				"__ZN16IONVMeController20IssueIdentifyCommandEP18IOMemoryDescriptorP16AppleNVMeRequestj"
+			};
 
-		Func<IOReturn,void*,void*> IONVMeController__ProcessSyncNVMeRequest {
-			"__ZN16IONVMeController22ProcessSyncNVMeRequestEP16AppleNVMeRequest"
-		};
+			Func<IOReturn,void*,void*> ProcessSyncNVMeRequest {
+				"__ZN16IONVMeController22ProcessSyncNVMeRequestEP16AppleNVMeRequest"
+			};
 
-		Func<void*,void*,uint64_t> IONVMeController__GetRequest {
-			"__ZN16IONVMeController10GetRequestEj"
-		};
+			Func<void*,void*,uint64_t> GetRequest {
+				"__ZN16IONVMeController10GetRequestEj"
+			};
+			Func<void,void*,void*> ReturnRequest {
+				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
+			};
+		} IONVMeController;
 
-		Func<void,void*,uint8_t> AppleNVMeRequest__BuildCommandGetFeatures {
-			"__ZN16AppleNVMeRequest23BuildCommandGetFeaturesEh"
-		};
+		struct {
+			Func<void,void*,uint8_t> BuildCommandGetFeatures {
+				"__ZN16AppleNVMeRequest23BuildCommandGetFeaturesEh"
+			};
 
-		Func<void,void*,uint8_t> AppleNVMeRequest__BuildCommandSetFeaturesCommon {
-			"__ZN16AppleNVMeRequest29BuildCommandSetFeaturesCommonEh"
-		};
+			Func<void,void*,uint8_t> BuildCommandSetFeaturesCommon {
+				"__ZN16AppleNVMeRequest29BuildCommandSetFeaturesCommonEh"
+			};
 
-		Func<void,void*,void*> IONVMeController__ReturnRequest {
-			"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
-		};
+			Func<uint32_t,void*> GetStatus {
+				"__ZN16AppleNVMeRequest9GetStatusEv"
+			};
 
-		Func<uint32_t,void*> AppleNVMeRequest__GetStatus {
-			"__ZN16AppleNVMeRequest9GetStatusEv"
-		};
+			Func<uint32_t,void*> GetOpcode {
+				"__ZN16AppleNVMeRequest9GetOpcodeEv"
+			};
 
-		Func<uint32_t,void*> AppleNVMeRequest__GetOpcode {
-			"__ZN16AppleNVMeRequest9GetOpcodeEv"
-		};
-
-		Func<IOReturn,void*,uint64_t,uint64_t> AppleNVMeRequest__GenerateIOVMSegments {
-			"__ZN16AppleNVMeRequest20GenerateIOVMSegmentsEyy"
-		};
+			Func<IOReturn,void*,uint64_t,uint64_t> GenerateIOVMSegments {
+				"__ZN16AppleNVMeRequest20GenerateIOVMSegmentsEyy"
+			};
+		} AppleNVMeRequest;
 	} kextFuncs;
 
 
@@ -129,10 +132,12 @@ private:
 			}
 		};
 
-		Member<uint32_t> AppleNVMeRequest__result;
-		Member<void*> AppleNVMeRequest__controller;
-		Member<NVMe::nvme_command> AppleNVMeRequest__command;
-		Member<IOBufferMemoryDescriptor*> AppleNVMeRequest__prpDescriptor;
+		struct {
+			Member<uint32_t> result;
+			Member<void*> controller;
+			Member<NVMe::nvme_command> command;
+			Member<IOBufferMemoryDescriptor*> prpDescriptor;
+		} AppleNVMeRequest;
 	} kextMembers;
 
 	/*
