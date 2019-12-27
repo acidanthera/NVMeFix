@@ -33,6 +33,7 @@
 #include <Headers/plugin_start.hpp>
 
 #include "nvme.h"
+#include "nvme_quirks.hpp"
 #include "NVMeFixPlugin.hpp"
 
 static NVMeFixPlugin plugin;
@@ -188,6 +189,9 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	/* No error signaling -- just ACK the discovery to notification handler */
 	entry.processed = true;
 
+	/* First get quirks based on PCI device */
+	entry.quirks = NVMe::quirksForController(entry.controller);
+
 	IOBufferMemoryDescriptor* identifyDesc {nullptr};
 
 	if (identify(entry, identifyDesc) != kIOReturnSuccess) {
@@ -201,6 +205,11 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		identifyDesc->release();
 		return;
 	}
+
+	/* Get additional quirks based on identify data */
+	entry.quirks |= NVMe::quirksForController(ctrl->vid, ctrl->mn, ctrl->fr);
+
+	entry.controller->setProperty("quirks", OSNumber::withNumber(entry.quirks, 8 * sizeof(entry.quirks)));
 
 #ifdef DEBUG
 	char mn[40];
@@ -218,12 +227,14 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		DBGLOG("nvmef", "APST status %d", apste);
 #endif
 
-	if (!apste) {
+	if (!apste && !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST)) {
 		DBGLOG("nvmef", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
-	}
+	} else
+		DBGLOG("nvmef", "Not configuring APST due to quirks");
+
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess) {
 		DBGLOG("nvmef", "APST status %d", apste);
@@ -333,10 +344,8 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 			 * Don't allow transitions to the deepest state
 			 * if it's quirked off.
 			 */
-			// FIXME: add quirks
-//			if (state == ctrl->npss &&
-//			    (ctrl->quirks & NVME_QUIRK_NO_DEEPEST_PS))
-//				continue;
+			if (state == ctrl->npss && (entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_DEEPEST_PS))
+				continue;
 
 			/*
 			 * Is this state a useful non-operational state for

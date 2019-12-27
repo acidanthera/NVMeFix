@@ -149,6 +149,7 @@ private:
 	struct ControllerEntry {
 		IOService* controller {nullptr};
 		bool processed {false};
+		NVMe::nvme_quirks quirks {NVMe::NVME_QUIRK_NONE};
 	};
 
 	evector<ControllerEntry> controllers;

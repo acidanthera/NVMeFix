@@ -23,22 +23,12 @@
 #ifndef nvme_h
 #define nvme_h
 
-#include <stdint.h>
+#include "linux_types.h"
 
 #pragma pack(push,1)
 namespace NVMe {
 
-#define USING_TY(p, sz) using p ## sz = uint ## sz ## _t;
-
-USING_TY(__le, 16)
-USING_TY(__le, 32)
-USING_TY(__le, 64)
-USING_TY(__u, 8)
-USING_TY(__u, 16)
-USING_TY(__u, 32)
-USING_TY(__u, 64)
-
-#undef USING_TY
+using namespace linux_types;
 
 #define unlikely
 
@@ -49,10 +39,10 @@ USING_TY(__u, 64)
 #define NVMF_NQN_SIZE		223
 
 #define NVMF_TRSVCID_SIZE	32
-#define NVMF_TRADDR_SIZE	256
+#define NVMF_TRADDR_SIZE		256
 #define NVMF_TSAS_SIZE		256
 
-#define NVME_DISC_SUBSYS_NAME	"nqn.2014-08.org.nvmexpress.discovery"
+#define NVME_DISC_SUBSYS_NAME		"nqn.2014-08.org.nvmexpress.discovery"
 
 #define NVME_RDMA_IP_PORT	4420
 

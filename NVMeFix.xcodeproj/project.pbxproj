@@ -7,12 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2F1E835123B6248D0048B956 /* nvme_quirks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */; };
 		2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FAEE25A23AE266E00185076 /* NVMeFix.cpp */; };
 		2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F77373A23AE401900C87C16 /* plugin_start.cpp */; };
 		2F77376023AE406400C87C16 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F77372F23AE401900C87C16 /* libkmod.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_quirks.cpp; sourceTree = "<group>"; };
+		2F1E835023B6248D0048B956 /* nvme_quirks.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = nvme_quirks.hpp; sourceTree = "<group>"; };
+		2F1E835223B624C10048B956 /* linux_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linux_types.h; sourceTree = "<group>"; };
 		2F7736C823AE333800C87C16 /* nvme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nvme.h; sourceTree = "<group>"; };
 		2F77372F23AE401900C87C16 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkmod.a; sourceTree = "<group>"; };
 		2F77373123AE401900C87C16 /* entry64.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry64.S; sourceTree = "<group>"; };
@@ -164,20 +168,12 @@
 			path = capstone;
 			sourceTree = "<group>";
 		};
-		2F77375F23AE406400C87C16 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		2FF3E70523AE1DA100D8CDEB = {
 			isa = PBXGroup;
 			children = (
 				2FF3E71123AE1DA100D8CDEB /* NVMeFix */,
 				2FF3E71023AE1DA100D8CDEB /* Products */,
 				2F77372D23AE401900C87C16 /* Lilu */,
-				2F77375F23AE406400C87C16 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -193,8 +189,11 @@
 			isa = PBXGroup;
 			children = (
 				2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */,
+				2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */,
+				2F1E835023B6248D0048B956 /* nvme_quirks.hpp */,
 				2FAEE25A23AE266E00185076 /* NVMeFix.cpp */,
 				2F7736C823AE333800C87C16 /* nvme.h */,
+				2F1E835223B624C10048B956 /* linux_types.h */,
 				2FF3E71423AE1DA100D8CDEB /* Info.plist */,
 			);
 			path = NVMeFix;
@@ -257,6 +256,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */,
+				2F1E835123B6248D0048B956 /* nvme_quirks.cpp in Sources */,
 				2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -376,6 +376,7 @@
 		2FF3E71823AE1DA100D8CDEB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
@@ -386,7 +387,11 @@
 					"$(inherited)",
 					LILU_CUSTOM_IOKIT_INIT,
 				);
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources/";
+				GCC_WARN_PEDANTIC = NO;
+				HEADER_SEARCH_PATHS = (
+					"${PROJECT_DIR}/Lilu.kext/Contents/Resources/",
+					"${PROJECT_DIR}",
+				);
 				INFOPLIST_FILE = NVMeFix/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -405,6 +410,7 @@
 		2FF3E71923AE1DA100D8CDEB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				COMPILER_INDEX_STORE_ENABLE = NO;
@@ -413,7 +419,11 @@
 					"MODULE_VERSION=$(MODULE_VERSION)",
 					LILU_CUSTOM_IOKIT_INIT,
 				);
-				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/Lilu.kext/Contents/Resources/";
+				GCC_WARN_PEDANTIC = NO;
+				HEADER_SEARCH_PATHS = (
+					"${PROJECT_DIR}/Lilu.kext/Contents/Resources/",
+					"${PROJECT_DIR}",
+				);
 				INFOPLIST_FILE = NVMeFix/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
