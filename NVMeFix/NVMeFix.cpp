@@ -47,35 +47,30 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 	auto plugin = static_cast<NVMeFixPlugin*>(that);
 	assert(plugin);
 
-	IOLockLock(plugin->lck);
-
-	if (index != plugin->kextInfo.loadIndex) {
-		IOLockUnlock(plugin->lck);
+	if (index != plugin->kextInfo.loadIndex)
 		return;
-	}
+
 	DBGLOG("nvmef", "processKext %s", plugin->kextInfo.id);
 
-	plugin->kp = &patcher;
-
-	if (plugin->solveSymbols())
+	if (plugin->solveSymbols(patcher)) {
+		IOLockLock(plugin->lck);
+		plugin->solvedSymbols = true;
 		plugin->handleControllers();
-	IOLockUnlock(plugin->lck);
+		IOLockUnlock(plugin->lck);
+	}
 }
 
-bool NVMeFixPlugin::solveSymbols() {
-	if (!kp)
-		return false;
-
+bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	bool res = true;
-	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.GetRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.ReturnRequest.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GetStatus.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GetOpcode.solve(*kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(*kp, kextInfo.loadIndex);
+	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.GetRequest.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.IONVMeController.ReturnRequest.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GetStatus.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, kextInfo.loadIndex) &&
+	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, kextInfo.loadIndex);
 
 	auto offsetFromFunc = [](auto start, auto opcode, auto reg, auto rm, size_t ninsts_max=128) {
 		if (!start)
@@ -167,8 +162,7 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 
 //	DBGLOG("nvmef", "Discovered %u controllers", plugin->controllers.size());
 
-	/* We will not try to solve already solved symbols, so it's ok to call this multiple times */
-	if (plugin->solveSymbols())
+	if (plugin->solvedSymbols)
 		plugin->handleControllers();
 
 	IOLockUnlock(plugin->lck);
