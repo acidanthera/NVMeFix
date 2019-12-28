@@ -160,6 +160,8 @@ private:
 	IOReturn configureAPST(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 	IOReturn APSTenabled(ControllerEntry&, bool&);
 	IOReturn dumpAPST(ControllerEntry&, int npss);
+	IOReturn NVMeFeatures(ControllerEntry&, unsigned fid, unsigned* dword11, IOBufferMemoryDescriptor* desc,
+							 uint32_t* res, bool set);
 };
 
 
