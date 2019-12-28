@@ -78,7 +78,8 @@ bool NVMeFixPlugin::solveSymbols() {
 	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(*kp, kextInfo.loadIndex);
 
 	auto offsetFromFunc = [](auto start, auto opcode, auto reg, auto rm, size_t ninsts_max=128) {
-		assert(start);
+		if (!start)
+			return 0u;
 
 		hde64s dis;
 
