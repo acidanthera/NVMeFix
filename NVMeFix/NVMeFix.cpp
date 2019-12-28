@@ -181,6 +181,25 @@ void NVMeFixPlugin::handleControllers() {
 		handleController(controllers[i]);
 }
 
+template <typename T>
+static bool propertyFromParent(IOService* controller, const char* name, T& prop) {
+	assertf(controller->metaCast("IONVMeController"), "Controller has wrong type");
+
+	auto parent = controller->getParentEntry(gIOServicePlane);
+	if (!parent || !parent->metaCast("IOPCIDevice")) {
+		DBGLOG("quirks", "Controller parent is not an IOPCIDevice");
+		return false;
+	}
+
+	auto data = parent->getProperty(name);
+	if (data)
+		return WIOKit::getOSDataValue(data, name, prop);
+	else
+		DBGLOG("nvmef", "Property %s not found for parent service", name);
+
+	return true;
+}
+
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	assert(entry.controller);
 
@@ -192,6 +211,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 
 	/* First get quirks based on PCI device */
 	entry.quirks = NVMe::quirksForController(entry.controller);
+	propertyFromParent(entry.controller, "ps-max-latency-us", entry.ps_max_latency_us);
 
 	IOBufferMemoryDescriptor* identifyDesc {nullptr};
 
@@ -228,7 +248,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		DBGLOG("nvmef", "APST status %d", apste);
 #endif
 
-	if (!apste && !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST)) {
+	if (!apste && !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
+		entry.ps_max_latency_us > 0) {
 		DBGLOG("nvmef", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
@@ -319,8 +340,6 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 		prepared = ret == kIOReturnSuccess;
 	}
 
-	constexpr uint64_t ps_max_latency_us {100000};
-
 	int max_ps {-1};
 
 	if (prepared) {
@@ -356,7 +375,7 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 				continue;
 
 			uint64_t exit_latency_us = ctrl->psd[state].exit_lat;
-			if (exit_latency_us > ps_max_latency_us)
+			if (exit_latency_us > entry.ps_max_latency_us)
 				continue;
 
 			uint64_t total_latency_us = exit_latency_us + ctrl->psd[state].entry_lat;

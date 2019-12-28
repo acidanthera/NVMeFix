@@ -150,6 +150,7 @@ private:
 		IOService* controller {nullptr};
 		bool processed {false};
 		NVMe::nvme_quirks quirks {NVMe::NVME_QUIRK_NONE};
+		uint64_t ps_max_latency_us {100000};
 	};
 
 	evector<ControllerEntry> controllers;
