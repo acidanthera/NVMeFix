@@ -17,6 +17,8 @@
 #define nvme_quirks_hpp
 
 #include <IOKit/IOService.h>
+#include <Headers/kern_iokit.hpp>
+#include <Headers/kern_util.hpp>
 
 #include "linux_types.h"
 
@@ -135,6 +137,25 @@ constexpr nvme_quirks operator&=(T& a, T b) {
 
 nvme_quirks quirksForController(IOService*);
 nvme_quirks quirksForController(uint16_t,const char*,const char*);
+}
+
+template <typename T>
+static bool propertyFromParent(IOService* controller, const char* name, T& prop) {
+	assertf(controller->metaCast("IONVMeController"), "Controller has wrong type");
+
+	auto parent = controller->getParentEntry(gIOServicePlane);
+	if (!parent || !parent->metaCast("IOPCIDevice")) {
+		DBGLOG("quirks", "Controller parent is not an IOPCIDevice");
+		return false;
+	}
+
+	auto data = parent->getProperty(name);
+	if (data)
+		return WIOKit::getOSDataValue(data, name, prop);
+	else
+		DBGLOG("nvmef", "Property %s not found for parent service", name);
+
+	return true;
 }
 
 #endif /* nvme_quirks_hpp */

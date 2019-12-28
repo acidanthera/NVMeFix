@@ -181,25 +181,6 @@ void NVMeFixPlugin::handleControllers() {
 		handleController(controllers[i]);
 }
 
-template <typename T>
-static bool propertyFromParent(IOService* controller, const char* name, T& prop) {
-	assertf(controller->metaCast("IONVMeController"), "Controller has wrong type");
-
-	auto parent = controller->getParentEntry(gIOServicePlane);
-	if (!parent || !parent->metaCast("IOPCIDevice")) {
-		DBGLOG("quirks", "Controller parent is not an IOPCIDevice");
-		return false;
-	}
-
-	auto data = parent->getProperty(name);
-	if (data)
-		return WIOKit::getOSDataValue(data, name, prop);
-	else
-		DBGLOG("nvmef", "Property %s not found for parent service", name);
-
-	return true;
-}
-
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	assert(entry.controller);
 

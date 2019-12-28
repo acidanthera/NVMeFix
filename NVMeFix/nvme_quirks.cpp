@@ -188,17 +188,16 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 
 nvme_quirks quirksForController(IOService* controller) {
 	assert(controller);
-	assertf(controller->metaCast("IONVMeController"), "Controller has wrong type");
 
 	uint32_t vendor {0}, device {0};
+	propertyFromParent(controller, "vendor-id", vendor);
+	propertyFromParent(controller, "device-id", device);
+
 	auto parent = controller->getParentEntry(gIOServicePlane);
 	if (!parent || !parent->metaCast("IOPCIDevice")) {
 		DBGLOG("quirks", "Controller parent is not an IOPCIDevice");
 		return NVME_QUIRK_NONE;
 	}
-
-	WIOKit::getOSDataValue(parent, "vendor-id", vendor);
-	WIOKit::getOSDataValue(parent, "device-id", device);
 
 	if (!vendor || !device) {
 		DBGLOG("quirks", "Failed to get vendor or device id");
