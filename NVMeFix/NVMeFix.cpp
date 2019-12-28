@@ -190,6 +190,13 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	/* No error signaling -- just ACK the discovery to notification handler */
 	entry.processed = true;
 
+	uint32_t vendor {};
+	propertyFromParent(entry.controller, "vendor-id", vendor);
+	if (vendor == 0x106b) {
+		SYSLOG("nvmef", "Ignoring Apple controller");
+		return;
+	}
+
 	/* First get quirks based on PCI device */
 	entry.quirks = NVMe::quirksForController(entry.controller);
 	propertyFromParent(entry.controller, "ps-max-latency-us", entry.ps_max_latency_us);
