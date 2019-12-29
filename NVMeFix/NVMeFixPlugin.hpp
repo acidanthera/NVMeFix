@@ -37,7 +37,9 @@ private:
 	static void processKext(void*, KernelPatcher&, size_t, mach_vm_address_t, size_t);
 	static bool matchingNotificationHandler(void*, void*, IOService*, IONotifier*);
 	static bool terminatedNotificationHandler(void*, void*, IOService*, IONotifier*);
-	bool solveSymbols();
+	bool solveSymbols(KernelPatcher& kp);
+
+	bool solvedSymbols {false};
 
 	IONotifier* matchingNotifier {nullptr}, * terminationNotifier {nullptr};
 
@@ -56,8 +58,6 @@ private:
 		{},
 		KernelPatcher::KextInfo::Unloaded
 	};
-
-	KernelPatcher* kp {nullptr};
 
 	struct {
 		template <typename T, typename... Args>
