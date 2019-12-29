@@ -32,11 +32,13 @@
 #include <Headers/kern_util.hpp>
 #include <Headers/plugin_start.hpp>
 
-#include "nvme.h"
-#include "nvme_quirks.hpp"
 #include "NVMeFixPlugin.hpp"
 
 static NVMeFixPlugin plugin;
+
+NVMeFixPlugin& globalPlugin() {
+	return plugin;
+}
 
 /**
  * This may be invoked before or after we get IOBSD mount notification, so in the both functions we
@@ -192,7 +194,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 
 	uint32_t vendor {};
 	propertyFromParent(entry.controller, "vendor-id", vendor);
-	if (vendor == 0x106b) {
+	if (vendor == 0x106b || entry.controller->metaCast("AppleNVMeController")) {
 		SYSLOG("nvmef", "Ignoring Apple controller");
 		return;
 	}
@@ -592,6 +594,6 @@ PluginConfiguration ADDPR(config) {
 	KernelVersion::Mojave,
 	KernelVersion::Catalina,
 	[]() {
-		plugin.init();
+		NVMeFixPlugin::globalPlugin().init();
 	}
 };

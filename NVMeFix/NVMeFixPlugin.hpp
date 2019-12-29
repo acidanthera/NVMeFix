@@ -21,12 +21,17 @@
 #include <IOKit/IOService.h>
 #include <IOKit/IOLocks.h>
 #include <IOKit/IOMemoryDescriptor.h>
+#include <IOKit/pwr_mgt/IOPMpowerState.h>
 #include <Headers/kern_patcher.hpp>
+
+#include "nvme.h"
+#include "nvme_quirks.hpp"
 
 class NVMeFixPlugin {
 public:
 	void init();
 	void deinit();
+	static NVMeFixPlugin& globalPlugin();
 
 private:
 	static void processKext(void*, KernelPatcher&, size_t, mach_vm_address_t, size_t);
@@ -67,6 +72,11 @@ private:
 				return fptr;
 			}
 
+			bool route(KernelPatcher& kp, size_t idx, T(*repl)(Args...)) {
+				KernelPatcher::RouteRequest request(name, repl, fptr);
+				return kp.routeMultiple(idx, &request, 1);
+			}
+
 			T operator()(Args&&... args) {
 				assertf(fptr, "%s not solved", name);
 				return (*reinterpret_cast<T(*)(Args...)>(fptr))(args...);
@@ -87,6 +97,15 @@ private:
 			};
 			Func<void,void*,void*> ReturnRequest {
 				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
+			};
+			Func<uint64_t,void*,uint64_t,void*> setPowerState {
+				"__ZN16IONVMeController13setPowerStateEmP9IOService"
+			};
+			Func<uint64_t,void*> GetActivePowerState {
+				"__ZN16IONVMeController19GetActivePowerStateEv"
+			};
+			Func<IOPMPowerState*,void*> ReturnPowerStatesArray {
+				"__ZN16IONVMeController22ReturnPowerStatesArrayEv"
 			};
 		} IONVMeController;
 
@@ -151,6 +170,7 @@ private:
 		bool processed {false};
 		NVMe::nvme_quirks quirks {NVMe::NVME_QUIRK_NONE};
 		uint64_t ps_max_latency_us {100000};
+		IOPMPowerState* powerStates {nullptr};
 	};
 
 	evector<ControllerEntry> controllers;
@@ -162,6 +182,16 @@ private:
 	IOReturn dumpAPST(ControllerEntry&, int npss);
 	IOReturn NVMeFeatures(ControllerEntry&, unsigned fid, unsigned* dword11, IOBufferMemoryDescriptor* desc,
 							 uint32_t* res, bool set);
+
+	struct PM {
+		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
+		bool solveSymbols();
+		IOPMPowerState* statesWithTable(const NVMe::nvme_id_ctrl*) const;
+
+		static uint64_t setPowerState(void*,uint64_t,void*);
+		static uint64_t GetActivePowerState(void*);
+		static IOPMPowerState* ReturnPowerStatesArray(void*);
+	} PM;
 };
 
 

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2F1E835123B6248D0048B956 /* nvme_quirks.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */; };
+		2F2BAA3523B7A00500F7DF53 /* nvme_pm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F2BAA3323B7A00500F7DF53 /* nvme_pm.cpp */; };
 		2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FAEE25A23AE266E00185076 /* NVMeFix.cpp */; };
 		2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F77373A23AE401900C87C16 /* plugin_start.cpp */; };
 		2F77376023AE406400C87C16 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F77372F23AE401900C87C16 /* libkmod.a */; };
@@ -17,6 +18,7 @@
 		2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_quirks.cpp; sourceTree = "<group>"; };
 		2F1E835023B6248D0048B956 /* nvme_quirks.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = nvme_quirks.hpp; sourceTree = "<group>"; };
 		2F1E835223B624C10048B956 /* linux_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linux_types.h; sourceTree = "<group>"; };
+		2F2BAA3323B7A00500F7DF53 /* nvme_pm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_pm.cpp; sourceTree = "<group>"; };
 		2F7736C823AE333800C87C16 /* nvme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nvme.h; sourceTree = "<group>"; };
 		2F77372F23AE401900C87C16 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkmod.a; sourceTree = "<group>"; };
 		2F77373123AE401900C87C16 /* entry64.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry64.S; sourceTree = "<group>"; };
@@ -189,9 +191,10 @@
 			isa = PBXGroup;
 			children = (
 				2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */,
+				2FAEE25A23AE266E00185076 /* NVMeFix.cpp */,
 				2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */,
 				2F1E835023B6248D0048B956 /* nvme_quirks.hpp */,
-				2FAEE25A23AE266E00185076 /* NVMeFix.cpp */,
+				2F2BAA3323B7A00500F7DF53 /* nvme_pm.cpp */,
 				2F7736C823AE333800C87C16 /* nvme.h */,
 				2F1E835223B624C10048B956 /* linux_types.h */,
 				2FF3E71423AE1DA100D8CDEB /* Info.plist */,
@@ -257,6 +260,7 @@
 			files = (
 				2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */,
 				2F1E835123B6248D0048B956 /* nvme_quirks.cpp in Sources */,
+				2F2BAA3523B7A00500F7DF53 /* nvme_pm.cpp in Sources */,
 				2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
