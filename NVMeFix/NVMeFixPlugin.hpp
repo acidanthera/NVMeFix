@@ -23,6 +23,7 @@
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/pwr_mgt/IOPMpowerState.h>
 #include <Headers/kern_patcher.hpp>
+#include <Headers/kern_util.hpp>
 
 #include "nvme.h"
 #include "nvme_quirks.hpp"
@@ -171,9 +172,20 @@ private:
 		NVMe::nvme_quirks quirks {NVMe::NVME_QUIRK_NONE};
 		uint64_t ps_max_latency_us {100000};
 		IOPMPowerState* powerStates {nullptr};
+		size_t npss {0};
+
+		static void deleter(ControllerEntry* entry) {
+			assert(entry);
+
+			if (entry->powerStates)
+				delete[] entry->powerStates;
+			delete entry;
+		}
+
+		explicit ControllerEntry(IOService* c) : controller(c) {}
 	};
 
-	evector<ControllerEntry> controllers;
+	evector<ControllerEntry*, ControllerEntry::deleter> controllers;
 	void handleControllers();
 	void handleController(ControllerEntry&);
 	IOReturn identify(ControllerEntry&,IOBufferMemoryDescriptor*&);

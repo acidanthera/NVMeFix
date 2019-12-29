@@ -148,13 +148,18 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 			bool has = false;
 
 			for (size_t i = 0; i < plugin->controllers.size(); i++)
-				if (plugin->controllers[i].controller == parent) {
+				if (plugin->controllers[i]->controller == parent) {
 					has = true;
 					break;
 				}
 
 			if (!has) {
-				plugin->controllers.push_back({parent, false});
+				auto entry = new ControllerEntry(parent);
+				if (!entry) {
+					SYSLOG("nvmef", "Failed to allocate ControllerEntry memory");
+					break;
+				}
+				plugin->controllers.push_back(entry);
 				break;
 			}
 		}
@@ -174,7 +179,7 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 void NVMeFixPlugin::handleControllers() {
 	DBGLOG("nvmef", "handleControllers for %u controllers", controllers.size());
 	for (size_t i = 0; i < controllers.size(); i++)
-		handleController(controllers[i]);
+		handleController(*controllers[i]);
 }
 
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
@@ -504,7 +509,7 @@ bool NVMeFixPlugin::terminatedNotificationHandler(void* that, void* , IOService*
 	assert(service && service->metaCast("IONVMeController"));
 
 	for (size_t i = 0; i < plugin->controllers.size(); i++)
-		if (plugin->controllers[i].controller == service) {
+		if (plugin->controllers[i]->controller == service) {
 			plugin->controllers.erase(i);
 			break;
 		}
