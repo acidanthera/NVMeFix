@@ -74,47 +74,17 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, kextInfo.loadIndex) &&
 	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, kextInfo.loadIndex);
 
-	auto offsetFromFunc = [](auto start, auto opcode, auto reg, auto rm, size_t ninsts_max=128) {
-		if (!start)
-			return 0u;
-
-		hde64s dis;
-
-		for (size_t i = 0; i < ninsts_max; i++) {
-			auto sz = Disassembler::hdeDisasm(start, &dis);
-
-			if (dis.flags & F_ERROR)
-				break;
-
-			/* mov reg, [reg+disp] */
-			if (dis.opcode == opcode && dis.modrm_reg == reg && dis.modrm_rm == rm)
-				return dis.disp.disp32;
-
-			start += sz;
-		}
-
-		return 0u;
-	};
-
 	/* mov eax, [rdi+0xA8] */
-	if (!kextMembers.AppleNVMeRequest.result.offs)
-		kextMembers.AppleNVMeRequest.result.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
-															   0x8b, 0, 7) + 4;
-	kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
-
+	res &= kextMembers.AppleNVMeRequest.result.fromFunc (kextFuncs.AppleNVMeRequest.GetStatus.fptr,
+														 0x8b, 0, 7, 4) &
 	/* movzx eax, byte ptr [rdi+0x10A] */
-	if (!kextMembers.AppleNVMeRequest.command.offs)
-		kextMembers.AppleNVMeRequest.command.offs = offsetFromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
-		0xf, 0, 7);
-
+		kextMembers.AppleNVMeRequest.command.fromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
+												  0xf, 0, 7) &
 	/* mov [rbx+0xC0], r12 */
-	if (!kextMembers.AppleNVMeRequest.prpDescriptor.offs)
-		kextMembers.AppleNVMeRequest.prpDescriptor.offs = offsetFromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr, 0x89, 4, 3);
-
-	res &= kextMembers.AppleNVMeRequest.result.offs &&
-		kextMembers.AppleNVMeRequest.controller.offs &&
-		kextMembers.AppleNVMeRequest.command.offs &&
-		kextMembers.AppleNVMeRequest.prpDescriptor.offs;
+		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr,
+														0x89, 4, 3);
+	if (res)
+		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
 	if (!res)
 		DBGLOG("nvmef", "Failed to solve symbols");
 	return res;

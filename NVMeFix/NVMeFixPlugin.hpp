@@ -150,6 +150,32 @@ private:
 
 				return getMember<T>(obj, offs);
 			}
+
+			bool fromFunc(mach_vm_address_t start, uint32_t opcode, uint32_t reg, uint32_t rm, uint32_t add=0, size_t ninsts_max=128) {
+				if (offs)
+					return true;
+
+				if (!start)
+					return false;
+				hde64s dis;
+
+				for (size_t i = 0; i < ninsts_max; i++) {
+					auto sz = Disassembler::hdeDisasm(start, &dis);
+
+					if (dis.flags & F_ERROR)
+						break;
+
+					/* mov reg, [reg+disp] */
+					if (dis.opcode == opcode && dis.modrm_reg == reg && dis.modrm_rm == rm) {
+						offs = dis.disp.disp32 + add;
+						return true;
+					}
+
+					start += sz;
+				}
+
+				return false;
+			};
 		};
 
 		struct {
