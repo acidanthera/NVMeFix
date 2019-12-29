@@ -77,9 +77,9 @@ private:
 				return kp.routeMultiple(idx, &request, 1);
 			}
 
-			T operator()(Args&&... args) {
+			T operator()(Args... args) const {
 				assertf(fptr, "%s not solved", name);
-				return (*reinterpret_cast<T(*)(Args...)>(fptr))(args...);
+				return (*reinterpret_cast<T(*)(Args...)>(fptr))(static_cast<Args&&>(args)...);
 			}
 		};
 

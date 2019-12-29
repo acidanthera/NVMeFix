@@ -313,9 +313,9 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 
 		if (ret == kIOReturnSuccess) {
 			if (set)
-				kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon(static_cast<void*&&>(req), fid);
+				kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon(req, fid);
 			else
-				kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures(static_cast<void*&&>(req), fid);
+				kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures(req, fid);
 
 			if (dword11)
 				kextMembers.AppleNVMeRequest.command.get(req)->features.dword11 = *dword11;
@@ -328,7 +328,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 				DBGLOG("feature", "Failed to prepare DMA command");
 			else {
 				if (desc)
-					ret = kextFuncs.AppleNVMeRequest.GenerateIOVMSegments(static_cast<void*&&>(req), 0,
+					ret = kextFuncs.AppleNVMeRequest.GenerateIOVMSegments(req, 0,
 																		  desc->getLength());
 
 				if (ret != kIOReturnSuccess)
@@ -337,7 +337,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 					*kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
 
 					ret = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller,
-																			static_cast<void*&&>(req));
+																			req);
 					if (ret != kIOReturnSuccess)
 						DBGLOG("feature", "ProcessSyncNVMeRequest failed");
 					else if (res)
@@ -346,7 +346,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 			}
 			if (desc)
 				reinterpret_cast<IODMACommand*>(req)->complete();
-			kextFuncs.IONVMeController.ReturnRequest(entry.controller, static_cast<void*&&>(req));
+			kextFuncs.IONVMeController.ReturnRequest(entry.controller, req);
 		}
 	} else
 		SYSLOG("feature", "Failed to prepare buffer");
