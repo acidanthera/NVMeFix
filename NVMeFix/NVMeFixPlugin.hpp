@@ -143,11 +143,11 @@ private:
 		template <typename T>
 		struct Member {
 			mach_vm_address_t offs {};
-			T* get(void* obj) {
+			T& get(void* obj) {
 				assert(offs);
 				assert(obj);
 
-				return reinterpret_cast<T*>(static_cast<uint8_t*>(obj) + offs);
+				return getMember<T>(obj, offs);
 			}
 		};
 

@@ -318,9 +318,9 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 				kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures(req, fid);
 
 			if (dword11)
-				kextMembers.AppleNVMeRequest.command.get(req)->features.dword11 = *dword11;
+				kextMembers.AppleNVMeRequest.command.get(req).features.dword11 = *dword11;
 			if (desc) {
-				*kextMembers.AppleNVMeRequest.prpDescriptor.get(req) = desc;
+				kextMembers.AppleNVMeRequest.prpDescriptor.get(req) = desc;
 				ret = reinterpret_cast<IODMACommand*>(req)->prepare(0, desc->getLength());
 			}
 
@@ -334,14 +334,14 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 				if (ret != kIOReturnSuccess)
 					DBGLOG("feature", "Failed to generate IO VM segments");
 				else {
-					*kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
+					kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
 
 					ret = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller,
 																			req);
 					if (ret != kIOReturnSuccess)
 						DBGLOG("feature", "ProcessSyncNVMeRequest failed");
 					else if (res)
-						*res = *kextMembers.AppleNVMeRequest.result.get(req);
+						*res = kextMembers.AppleNVMeRequest.result.get(req);
 				}
 			}
 			if (desc)
