@@ -18,7 +18,7 @@
  * Portions Copyright (c) 2011-2014, Intel Corporation.
  */
 
-#include <IOKit/IOService.h> /* conficting old header from lilu */
+#include <Library/LegacyIOService.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/IODMACommand.h>
 #include <IOKit/IOKitKeys.h>

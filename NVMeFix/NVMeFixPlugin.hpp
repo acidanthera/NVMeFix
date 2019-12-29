@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 
-#include <IOKit/IOService.h>
+#include <Library/LegacyIOService.h>
 #include <IOKit/IOLocks.h>
 #include <IOKit/IOMemoryDescriptor.h>
 #include <IOKit/pwr_mgt/IOPMpowerState.h>
