@@ -85,6 +85,7 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 														0x89, 4, 3);
 	if (res)
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
+	res &= PM.solveSymbols(kp);
 	if (!res)
 		DBGLOG("nvmef", "Failed to solve symbols");
 	return res;
@@ -201,20 +202,26 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 #endif
 
 	bool apste {false};
+	bool apstAllowed = !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
+		entry.ps_max_latency_us > 0;
+
+	if (!PM.init(entry, ctrl, apste || apstAllowed))
+		SYSLOG("pm", "Failed to initialise power management");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
 		DBGLOG("nvmef", "APST status %d", apste);
 #endif
 
-	if (!apste && !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
-		entry.ps_max_latency_us > 0) {
+	if (!apste && apstAllowed) {
 		DBGLOG("nvmef", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
+		else /* Assume we turn APST on without double checking in RELEASE builds */
+			apste = true;
 	} else
-		DBGLOG("nvmef", "Not configuring APST due to quirks");
+		DBGLOG("nvmef", "Not configuring APST (it is already enable or quirks prohibit it)");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess) {
@@ -540,6 +547,13 @@ fail:
 void NVMeFixPlugin::deinit() {
 	/* This kext is not unloadable */
 	panic("nvmef: deinit called");
+}
+
+NVMeFixPlugin::ControllerEntry* NVMeFixPlugin::entryForController(IOService* controller) const {
+	for (size_t i = 0; i < controllers.size(); i++)
+		if (controllers[i]->controller == controller)
+			return controllers[i];
+	return nullptr;
 }
 
 static const char *bootargOff[] {

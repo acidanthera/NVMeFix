@@ -34,6 +34,7 @@ public:
 	void deinit();
 	static NVMeFixPlugin& globalPlugin();
 
+	explicit NVMeFixPlugin() : PM(*this) {}
 private:
 	static void processKext(void*, KernelPatcher&, size_t, mach_vm_address_t, size_t);
 	static bool matchingNotificationHandler(void*, void*, IOService*, IONotifier*);
@@ -78,8 +79,15 @@ private:
 				return kp.routeMultiple(idx, &request, 1);
 			}
 
+			bool routeVirtual(KernelPatcher& kp, size_t idx, const char* vtFor, size_t offs, T(*repl)(Args...)) {
+				using PtrTy = T(**)(Args...);
+				assert(vtFor);
+				auto vt = kp.solveSymbol(idx, vtFor);
+				return vt && KernelPatcher::routeVirtual(&vt, offs, repl, reinterpret_cast<PtrTy>(&fptr));
+			}
+
 			T operator()(Args... args) const {
-				assertf(fptr, "%s not solved", name);
+				assertf(fptr, "%s not solved", name ? name : "(unknown)");
 				return (*reinterpret_cast<T(*)(Args...)>(fptr))(static_cast<Args&&>(args)...);
 			}
 		};
@@ -108,6 +116,13 @@ private:
 			Func<IOPMPowerState*,void*> ReturnPowerStatesArray {
 				"__ZN16IONVMeController22ReturnPowerStatesArrayEv"
 			};
+			Func<void,void*> ThreadEntry {
+				"__ZN16IONVMeController11ThreadEntryEv"
+			};
+			Func<uint64_t,void*,uint64_t> initialPowerStateForDomainState {
+				"__ZN16IONVMeController31initialPowerStateForDomainStateEm"
+			};
+			Func<bool,void*,unsigned long, unsigned long> activityTickle {};
 		} IONVMeController;
 
 		struct {
@@ -179,6 +194,10 @@ private:
 		};
 
 		struct {
+			Member<uint32_t> fProposedPowerState;
+		} IONVMeController;
+
+		struct {
 			Member<uint32_t> result;
 			Member<void*> controller;
 			Member<NVMe::nvme_command> command;
@@ -198,7 +217,7 @@ private:
 		NVMe::nvme_quirks quirks {NVMe::NVME_QUIRK_NONE};
 		uint64_t ps_max_latency_us {100000};
 		IOPMPowerState* powerStates {nullptr};
-		size_t npss {0};
+		size_t nstates {0};
 
 		static void deleter(ControllerEntry* entry) {
 			assert(entry);
@@ -220,17 +239,24 @@ private:
 	IOReturn dumpAPST(ControllerEntry&, int npss);
 	IOReturn NVMeFeatures(ControllerEntry&, unsigned fid, unsigned* dword11, IOBufferMemoryDescriptor* desc,
 							 uint32_t* res, bool set);
-
+	ControllerEntry* entryForController(IOService*) const;
 	struct PM {
-		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
-		bool solveSymbols();
-		IOPMPowerState* statesWithTable(const NVMe::nvme_id_ctrl*) const;
+		/**
+		 * Initialization is meant to be executed in critical section so that
+		 * PM function hooks do not observe incomplete result of initialization.
+		 */
+		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*, bool);
+		bool solveSymbols(KernelPatcher&);
 
-		static uint64_t setPowerState(void*,uint64_t,void*);
 		static uint64_t GetActivePowerState(void*);
-		static IOPMPowerState* ReturnPowerStatesArray(void*);
+		static uint64_t initialPowerStateForDomainState(void*,uint64_t);
+		static bool activityTickle(void*,unsigned long,unsigned long);
+		static void ThreadEntry(void*);
+
+		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
+	private:
+		NVMeFixPlugin& plugin;
 	} PM;
 };
-
 
 #endif /* NVMeFixPlugin_h */
