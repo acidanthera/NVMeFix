@@ -76,7 +76,8 @@ private:
 
 			bool route(KernelPatcher& kp, size_t idx, T(*repl)(Args...)) {
 				KernelPatcher::RouteRequest request(name, repl, fptr);
-				return kp.routeMultiple(idx, &request, 1);
+				bool ret = kp.routeMultiple(idx, &request, 1);
+				return ret;
 			}
 
 			bool routeVirtual(KernelPatcher& kp, size_t idx, const char* vtFor, size_t offs, T(*repl)(Args...)) {
@@ -166,7 +167,8 @@ private:
 				return getMember<T>(obj, offs);
 			}
 
-			bool fromFunc(mach_vm_address_t start, uint32_t opcode, uint32_t reg, uint32_t rm, uint32_t add=0, size_t ninsts_max=128) {
+			bool fromFunc(mach_vm_address_t start, uint32_t opcode, uint32_t reg, uint32_t rm,
+						  uint32_t add=0, size_t ninsts_max=128) {
 				if (offs)
 					return true;
 

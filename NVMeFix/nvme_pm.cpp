@@ -117,7 +117,17 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 
 bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
 	auto idx = plugin.kextInfo.loadIndex;
-	bool ret = plugin.kextFuncs.IONVMeController.GetActivePowerState.route(kp, idx,
+	bool ret =
+		plugin.kextFuncs.IONVMeController.GetActivePowerState.solve(kp, idx) &&
+		plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState.solve(kp, idx) &&
+		kp.solveSymbol(idx, "__ZTV16IONVMeController") &&
+		plugin.kextFuncs.IONVMeController.ThreadEntry.solve(kp, idx);
+
+	/* mov ecx, [rbx+0x188] */
+	ret &= plugin.kextMembers.IONVMeController.fProposedPowerState.fromFunc(
+				plugin.kextFuncs.IONVMeController.ThreadEntry.fptr, 0x8b, 1, 3);
+
+	ret &= plugin.kextFuncs.IONVMeController.GetActivePowerState.route(kp, idx,
 																		   GetActivePowerState) &&
 	plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState.route(kp,
 													idx,
@@ -126,9 +136,6 @@ bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
 													"__ZTV16IONVMeController", 249, activityTickle) &&
 	plugin.kextFuncs.IONVMeController.ThreadEntry.route(kp, idx, ThreadEntry);
 
-	/* mov ecx, [rbx+0x188] */
-	ret &= plugin.kextMembers.IONVMeController.fProposedPowerState.fromFunc(
-				plugin.kextFuncs.IONVMeController.ThreadEntry.fptr, 0x8b, 1, 3);
 	return ret;
 }
 /**
