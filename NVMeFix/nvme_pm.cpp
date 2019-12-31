@@ -54,6 +54,8 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		return false;
 	}
 
+	DBGLOG("pm", "npss 0x%x", ctrl->npss);
+
 	if (ctrl->apsta || apste)
 		nop = 1;
 	entry.nstates = 1 /* off */ + 1 /* nop */ + op;
@@ -79,11 +81,12 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	size_t idx {1};
 	for (int state = ctrl->npss; state >= 0; state--) {
 		/* Seek to last non-operational state if NPSS is enabled */
-		if (ctrl->apsta && state > 0 && ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE && ctrl->psd[state + 1].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE)
+		if (ctrl->apsta && state > 0 && ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE &&
+			ctrl->psd[state + 1].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE)
 			continue;
 		assert(idx != 1 || ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE);
 
-		auto& ps = entry.powerStates[idx++];
+		auto& ps = entry.powerStates[idx];
 		ps = {kIOPMPowerStateVersion1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 		/**
 		 * We shouldn't have any IOPM clients that require power, so don't
@@ -94,25 +97,72 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 
 		/* In non-operational state device is not usable and we may sleep */
 		if (ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE) {
-			entry.powerStates[idx].capabilityFlags |= kIOPMLowPower;
+			ps.capabilityFlags |= kIOPMLowPower;
 		} else {
 			ps.capabilityFlags |= kIOPMPreventIdleSleep;
 			ps.capabilityFlags |= kIOPMDeviceUsable;
 		}
+
+		DBGLOG("pm", "Setting ps %u capabilityFlags 0x%x", idx, ps.capabilityFlags);
+		idx++;
 	}
+
+	DBGLOG("pm", "Publishing %u states", entry.nstates);
 
 	/* Not sure if this is true with APST on */
 //	entry.powerStates[ctrl->npss + 1].capabilityFlags |= kIOPMInitialDeviceState;
 
+	/* FIXME: Issue thread_call_cancel(controller->PMThread)? */
+
+	/**
+	 * This seems to leave the parent in inconsistent state. PMstop should detach us from PCIDevice but
+	 * when calling joinPMTree PM says "PXSX: IONVMeController is already a child", although it does
+	 * not seem to be visible anywhere in PM plane. As a workaround, we remove it by hand.
+	 */
+	parent->retain();
+	entry.controller->retain();
 	entry.controller->PMstop();
+	auto iter = entry.controller->getParentIterator(gIOPowerPlane);
+	if (iter) {
+		OSObject* next {nullptr};
+		while ((next = iter->getNextObject())) {
+			IOPowerConnection* conn = reinterpret_cast<IOPowerConnection*>
+				(next->metaCast("IOPowerConnection"));
+			if (conn) {
+				parent->removePowerChild(conn);
+				DBGLOG("pm", "Removing power child");
+				break;
+			}
+		}
+	}
+
+	entry.controller->release();
 	entry.controller->PMinit();
+
 	parent->joinPMtree(entry.controller);
-	entry.controller->registerPowerDriver(entry.controller, entry.powerStates, entry.nstates);
-	/* Not sure if we need this and how that would work in the context */
-//	IOService::makeUsable();
-	entry.controller->changePowerStateTo(entry.nstates - 1);
+	/* Judging by IOServicePM source it should work without stop/init */
+	auto status = entry.controller->registerPowerDriver(entry.controller, entry.powerStates,
+														entry.nstates);
+	if (status != kIOReturnSuccess) {
+		SYSLOG("pm", "registerPowerDriver failed with 0x%x", status);
+		goto fail;
+	}
+
+	status = entry.controller->makeUsable();
+	if (status != kIOReturnSuccess) {
+		SYSLOG("pm", "makeUsable failed with 0x%x", status);
+		goto fail;
+	}
+
+//	entry.controller->changePowerStateTo(entry.nstates - 1);
 
 	return true;
+fail:
+	if (entry.powerStates) {
+		delete[] entry.powerStates;
+		entry.powerStates = nullptr;
+	}
+	return false;
 }
 
 bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
@@ -184,23 +234,30 @@ uint64_t NVMeFixPlugin::PM::GetActivePowerState(void* controller) {
 		else
 			aps = entry->nstates - 1;
 	}
-	IOLockUnlock(plugin.lck);
 
-	if (aps)
-		return aps;
-	else
-		return plugin.kextFuncs.IONVMeController.GetActivePowerState(controller);
+	if (!aps) {
+		if (plugin.kextFuncs.IONVMeController.GetActivePowerState.fptr)
+			aps = plugin.kextFuncs.IONVMeController.GetActivePowerState(controller);
+		else
+			aps = 2; /* FIXME: We should have solved it, avoid using the hardcoded value.. */
+	}
+	IOLockUnlock(plugin.lck);
+	return aps;
 }
 
 uint64_t NVMeFixPlugin::PM::initialPowerStateForDomainState(void* controller, uint64_t domainState) {
+	DBGLOG("pm", "initialPowerStateForDomainState");
+	return 2;
 	return GetActivePowerState(controller);
 }
 
 bool NVMeFixPlugin::PM::activityTickle(void* controller, unsigned long type, unsigned long stateNumber) {
+//	DBGLOG("pm", "activityTickle %u", stateNumber);
+	return true;
 	uint64_t aps {};
 	auto& plugin = NVMeFixPlugin::globalPlugin();
 
-	DBGLOG("pm", "activityTickle 0x%x", stateNumber);
+//	DBGLOG("pm", "activityTickle 0x%x", stateNumber);
 
 	IOLockLock(plugin.lck);
 	auto entry = plugin.entryForController(static_cast<IOService*>(controller));
