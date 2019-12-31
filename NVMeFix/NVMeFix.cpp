@@ -36,7 +36,7 @@
 
 static NVMeFixPlugin plugin;
 
-NVMeFixPlugin& globalPlugin() {
+NVMeFixPlugin& NVMeFixPlugin::globalPlugin() {
 	return plugin;
 }
 
@@ -63,19 +63,20 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 }
 
 bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
+	auto idx = plugin.kextInfo.loadIndex;
 	bool res = true;
-	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.GetRequest.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.IONVMeController.ReturnRequest.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GetStatus.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, kextInfo.loadIndex) &&
-	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, kextInfo.loadIndex);
+	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, idx) &&
+	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, idx) &&
+	kextFuncs.IONVMeController.GetRequest.solve(kp, idx) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, idx) &&
+	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(kp, idx) &&
+	kextFuncs.IONVMeController.ReturnRequest.solve(kp, idx) &&
+	kextFuncs.AppleNVMeRequest.GetStatus.solve(kp, idx) &&
+	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, idx) &&
+	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, idx);
 
 	/* mov eax, [rdi+0xA8] */
-	res &= kextMembers.AppleNVMeRequest.result.fromFunc (kextFuncs.AppleNVMeRequest.GetStatus.fptr,
+	res &= kextMembers.AppleNVMeRequest.result.fromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
 														 0x8b, 0, 7, 4) &
 	/* movzx eax, byte ptr [rdi+0x10A] */
 		kextMembers.AppleNVMeRequest.command.fromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
