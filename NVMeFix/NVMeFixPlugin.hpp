@@ -75,9 +75,10 @@ private:
 			}
 
 			bool route(KernelPatcher& kp, size_t idx, T(*repl)(Args...)) {
-				KernelPatcher::RouteRequest request(name, repl, fptr);
-				bool ret = kp.routeMultiple(idx, &request, 1);
-				return ret;
+				if (!solve(kp, idx))
+					return false;
+				fptr = kp.routeFunction(fptr, reinterpret_cast<mach_vm_address_t>(repl), true);
+				return fptr;
 			}
 
 			bool routeVirtual(KernelPatcher& kp, size_t idx, const char* vtFor, size_t offs, T(*repl)(Args...)) {
