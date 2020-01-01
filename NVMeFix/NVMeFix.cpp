@@ -55,10 +55,8 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 	DBGLOG("nvmef", "processKext %s", plugin->kextInfo.id);
 
 	if (plugin->solveSymbols(patcher)) {
-		IOLockLock(plugin->lck);
-		plugin->solvedSymbols = true;
+		atomic_store_explicit(&plugin->solvedSymbols, true, memory_order_release);
 		plugin->handleControllers();
-		IOLockUnlock(plugin->lck);
 	}
 }
 
@@ -141,17 +139,21 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 
 //	DBGLOG("nvmef", "Discovered %u controllers", plugin->controllers.size());
 
-	if (plugin->solvedSymbols)
+	IOLockUnlock(plugin->lck);
+
+	if (atomic_load_explicit(&plugin->solvedSymbols, memory_order_acquire))
 		plugin->handleControllers();
 
-	IOLockUnlock(plugin->lck);
 	return true;
 }
 
 void NVMeFixPlugin::handleControllers() {
 	DBGLOG("nvmef", "handleControllers for %u controllers", controllers.size());
-	for (size_t i = 0; i < controllers.size(); i++)
+	for (size_t i = 0; i < controllers.size(); i++) {
+		IOLockLock(controllers[i]->lck);
 		handleController(*controllers[i]);
+		IOLockUnlock(controllers[i]->lck);
+	}
 }
 
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
@@ -486,11 +488,15 @@ bool NVMeFixPlugin::terminatedNotificationHandler(void* that, void* , IOService*
 	assert(plugin);
 	assert(service && service->metaCast("IONVMeController"));
 
+	IOLockLock(plugin->lck);
 	for (size_t i = 0; i < plugin->controllers.size(); i++)
-		if (plugin->controllers[i]->controller == service) {
+		if (plugin->controllers[i]->controller == service &&
+			IOLockTryLock(plugin->controllers[i]->lck)) {
+			IOLockUnlock(plugin->controllers[i]->lck);
 			plugin->controllers.erase(i);
 			break;
 		}
+	IOLockUnlock(plugin->lck);
 
 	return false;
 }
@@ -508,6 +514,8 @@ void NVMeFixPlugin::init() {
 		SYSLOG("nvmef", "Failed to alloc lock");
 		goto fail;
 	}
+
+	atomic_store_explicit(&solvedSymbols, false, memory_order_relaxed);
 
 	matchingNotifier = IOService::addMatchingNotification(gIOPublishNotification,
 							IOService::serviceMatching("IOMediaBSDClient"),

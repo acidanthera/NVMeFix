@@ -154,7 +154,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		goto fail;
 	}
 
-//	entry.controller->changePowerStateTo(entry.nstates - 1);
+	entry.controller->setPowerState(entry.nstates - 1, entry.controller);
 
 	return true;
 fail:
@@ -171,7 +171,8 @@ bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
 		plugin.kextFuncs.IONVMeController.GetActivePowerState.solve(kp, idx) &&
 		plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState.solve(kp, idx) &&
 		kp.solveSymbol(idx, "__ZTV16IONVMeController") &&
-		plugin.kextFuncs.IONVMeController.ThreadEntry.solve(kp, idx);
+		plugin.kextFuncs.IONVMeController.ThreadEntry.solve(kp, idx) &&
+		plugin.kextFuncs.IONVMeController.setPowerState.solve(kp, idx);
 
 	/* mov ecx, [rbx+0x188] */
 	ret &= plugin.kextMembers.IONVMeController.fProposedPowerState.fromFunc(
@@ -184,7 +185,8 @@ bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
 													initialPowerStateForDomainState) &&
 	plugin.kextFuncs.IONVMeController.activityTickle.routeVirtual(kp, idx,
 													"__ZTV16IONVMeController", 249, activityTickle) &&
-	plugin.kextFuncs.IONVMeController.ThreadEntry.route(kp, idx, ThreadEntry);
+	plugin.kextFuncs.IONVMeController.ThreadEntry.route(kp, idx, ThreadEntry) &&
+	plugin.kextFuncs.IONVMeController.setPowerState.route(kp, idx, setPowerState);
 
 	return ret;
 }
@@ -214,61 +216,76 @@ bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
  * needed.
  * FIXME: IOPM may see an inconsistent non-active state if APST is enabled. We could hook
  */
+
 uint64_t NVMeFixPlugin::PM::GetActivePowerState(void* controller) {
 	uint64_t aps {}; /* Active power state is never zero */
 	auto& plugin = NVMeFixPlugin::globalPlugin();
 
 	/**
 	 * We need to lock now as controller list may be being modified.
+	 * Our initialization occurs in critical section, and it depends on some of these functions, so
+	 * we will deadlock if we just use that lock.
 	 */
+	ControllerEntry* entry {nullptr};
 	IOLockLock(plugin.lck);
-	auto entry = plugin.entryForController(static_cast<IOService*>(controller));
-
-	/* Our IOPM tables are ready, so we have our PM working */
-	if (entry && entry->powerStates) {
-		auto& pps = plugin.kextMembers.IONVMeController.fProposedPowerState.get(controller);
-		assertf(pps < entry->nstates, "fProposedPowerState not in PM table");
-
-		if (entry->powerStates[pps].capabilityFlags & kIOPMDeviceUsable)
-			aps = pps;
-		else
-			aps = entry->nstates - 1;
-	}
-
-	if (!aps) {
-		if (plugin.kextFuncs.IONVMeController.GetActivePowerState.fptr)
-			aps = plugin.kextFuncs.IONVMeController.GetActivePowerState(controller);
-		else
-			aps = 2; /* FIXME: We should have solved it, avoid using the hardcoded value.. */
-	}
+	entry = plugin.entryForController(static_cast<IOService*>(controller));
 	IOLockUnlock(plugin.lck);
+
+	/* If we fail to obtain the lock now, it means we are initialisating the controller */
+	if (entry && IOLockTryLock(entry->lck)) {
+		/* Our IOPM tables are ready, so we have our PM working */
+		if (entry->powerStates) {
+			auto& pps = plugin.kextMembers.IONVMeController.fProposedPowerState.get(controller);
+			assertf(pps < entry->nstates, "fProposedPowerState not in PM table");
+//				DBGLOG("pm", "fProposedPowerState %llu", pps);
+
+			if (entry->powerStates[pps].capabilityFlags & kIOPMDeviceUsable)
+				aps = pps;
+			else
+				aps = entry->nstates - 1;
+		}
+
+		IOLockUnlock(entry->lck);
+	}
+	if (!aps)
+		aps = plugin.kextFuncs.IONVMeController.GetActivePowerState(controller);
+
 	return aps;
 }
 
 uint64_t NVMeFixPlugin::PM::initialPowerStateForDomainState(void* controller, uint64_t domainState) {
 	DBGLOG("pm", "initialPowerStateForDomainState");
-	return 2;
 	return GetActivePowerState(controller);
 }
 
 bool NVMeFixPlugin::PM::activityTickle(void* controller, unsigned long type, unsigned long stateNumber) {
 //	DBGLOG("pm", "activityTickle %u", stateNumber);
-	return true;
 	uint64_t aps {};
 	auto& plugin = NVMeFixPlugin::globalPlugin();
 
+	ControllerEntry* entry {nullptr};
+	IOLockLock(plugin.lck);
+	entry = plugin.entryForController(static_cast<IOService*>(controller));
+	IOLockUnlock(plugin.lck);
+
 //	DBGLOG("pm", "activityTickle 0x%x", stateNumber);
 
-	IOLockLock(plugin.lck);
-	auto entry = plugin.entryForController(static_cast<IOService*>(controller));
-
-	if (entry && entry->powerStates)
-		aps = entry->nstates - 1;
-	IOLockUnlock(plugin.lck);
+	if (entry && IOLockTryLock(entry->lck)) {
+		if (entry->powerStates)
+			aps = entry->nstates - 1;
+		IOLockUnlock(entry->lck);
+	}
 
 	if (!aps)
 		aps = stateNumber;
 	return plugin.kextFuncs.IONVMeController.activityTickle(controller, type, aps);
+}
+
+IOReturn NVMeFixPlugin::PM::setPowerState(void* controller, unsigned long state, IOService* what) {
+	DBGLOG("pm", "setPowerState 0x%x", state);
+	return NVMeFixPlugin::globalPlugin().kextFuncs.IONVMeController.setPowerState(controller,
+																				  state,
+																				  what);
 }
 
 void NVMeFixPlugin::PM::ThreadEntry(void* controller) {

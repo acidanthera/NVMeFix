@@ -16,6 +16,7 @@
 #ifndef NVMeFixPlugin_h
 #define NVMeFixPlugin_h
 
+#include <stdatomic.h>
 #include <stdint.h>
 
 #include <Library/LegacyIOService.h>
@@ -41,7 +42,7 @@ private:
 	static bool terminatedNotificationHandler(void*, void*, IOService*, IONotifier*);
 	bool solveSymbols(KernelPatcher& kp);
 
-	bool solvedSymbols {false};
+	atomic_bool solvedSymbols;
 
 	IONotifier* matchingNotifier {nullptr}, * terminationNotifier {nullptr};
 
@@ -75,9 +76,10 @@ private:
 			}
 
 			bool route(KernelPatcher& kp, size_t idx, T(*repl)(Args...)) {
-				KernelPatcher::RouteRequest request(name, repl, fptr);
-				bool ret = kp.routeMultiple(idx, &request, 1);
-				return ret;
+				if (!solve(kp, idx))
+					return false;
+				fptr = kp.routeFunction(fptr, reinterpret_cast<mach_vm_address_t>(repl), true);
+				return fptr;
 			}
 
 			bool routeVirtual(KernelPatcher& kp, size_t idx, const char* vtFor, size_t offs, T(*repl)(Args...)) {
@@ -108,7 +110,7 @@ private:
 			Func<void,void*,void*> ReturnRequest {
 				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
 			};
-			Func<uint64_t,void*,uint64_t,void*> setPowerState {
+			Func<IOReturn,void*,unsigned long,IOService*> setPowerState {
 				"__ZN16IONVMeController13setPowerStateEmP9IOService"
 			};
 			Func<uint64_t,void*> GetActivePowerState {
@@ -124,6 +126,7 @@ private:
 				"__ZN16IONVMeController31initialPowerStateForDomainStateEm"
 			};
 			Func<bool,void*,unsigned long, unsigned long> activityTickle {};
+			Func<IOReturn,void*, unsigned long> changePowerStateToPriv {};
 		} IONVMeController;
 
 		struct {
@@ -220,16 +223,21 @@ private:
 		uint64_t ps_max_latency_us {100000};
 		IOPMPowerState* powerStates {nullptr};
 		size_t nstates {0};
+		IOLock* lck {nullptr};
 
 		static void deleter(ControllerEntry* entry) {
 			assert(entry);
 
 			if (entry->powerStates)
 				delete[] entry->powerStates;
+			if (entry->lck)
+				IOLockFree(entry->lck);
 			delete entry;
 		}
 
-		explicit ControllerEntry(IOService* c) : controller(c) {}
+		explicit ControllerEntry(IOService* c) : controller(c) {
+			lck = IOLockAlloc();
+		}
 	};
 
 	evector<ControllerEntry*, ControllerEntry::deleter> controllers;
@@ -254,6 +262,7 @@ private:
 		static uint64_t initialPowerStateForDomainState(void*,uint64_t);
 		static bool activityTickle(void*,unsigned long,unsigned long);
 		static void ThreadEntry(void*);
+		static IOReturn setPowerState(void*,unsigned long,IOService*);
 
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
 	private:
