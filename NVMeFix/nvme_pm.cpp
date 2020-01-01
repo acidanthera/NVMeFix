@@ -12,6 +12,7 @@
 // THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 // WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
+#include <Library/LegacyIOService.h>
 #include <IOKit/pwr_mgt/IOPM.h>
 #include <kern/assert.h>
 
@@ -35,8 +36,13 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		SYSLOG("pm", "Failed to get PCI parent");
 		return false;
 	}
-
 	unsigned op {}, nop {};
+
+	entry.pm = new NVMePMProxy();
+	if (entry.pm && !entry.pm->init()) {
+		DBGLOG("pm", "Failed to init IOService");
+		return false;
+	}
 
 	if (entry.quirks & NVMe::NVME_QUIRK_SIMPLE_SUSPEND) {
 		SYSLOG("pm", "Using PCI PM due to quirk");
@@ -119,6 +125,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	 * when calling joinPMTree PM says "PXSX: IONVMeController is already a child", although it does
 	 * not seem to be visible anywhere in PM plane. As a workaround, we remove it by hand.
 	 */
+
 	parent->retain();
 	entry.controller->retain();
 	entry.controller->PMstop();
@@ -135,26 +142,26 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 			}
 		}
 	}
+	entry.pm->PMinit();
+	parent->joinPMtree(entry.pm);
 
-	entry.controller->release();
-	entry.controller->PMinit();
-
-	parent->joinPMtree(entry.controller);
 	/* Judging by IOServicePM source it should work without stop/init */
-	auto status = entry.controller->registerPowerDriver(entry.controller, entry.powerStates,
+	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates,
 														entry.nstates);
 	if (status != kIOReturnSuccess) {
 		SYSLOG("pm", "registerPowerDriver failed with 0x%x", status);
 		goto fail;
 	}
+//	entry.controller->PMinit();
+	entry.pm->joinPMtree(entry.controller);
 
-	status = entry.controller->makeUsable();
+	status = entry.pm->makeUsable();
 	if (status != kIOReturnSuccess) {
 		SYSLOG("pm", "makeUsable failed with 0x%x", status);
 		goto fail;
 	}
 
-	entry.controller->setPowerState(entry.nstates - 1, entry.controller);
+	entry.pm->setPowerState(entry.nstates - 1, entry.controller);
 
 	return true;
 fail:
@@ -162,10 +169,28 @@ fail:
 		delete[] entry.powerStates;
 		entry.powerStates = nullptr;
 	}
+	if (entry.pm) {
+		entry.pm->release();
+		entry.pm = nullptr;
+	}
+	return false;
+}
+
+OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
+
+IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
+	DBGLOG("pm", "setPowerState %ul", powerStateOrdinal);
+	return IOPMAckImplied;
+}
+
+bool NVMePMProxy::activityTickle(unsigned long type, unsigned long stateNumber) {
+	DBGLOG("pm", "activityTickle %u", stateNumber);
 	return false;
 }
 
 bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
+	return true;
+
 	auto idx = plugin.kextInfo.loadIndex;
 	bool ret =
 		plugin.kextFuncs.IONVMeController.GetActivePowerState.solve(kp, idx) &&
@@ -255,7 +280,12 @@ uint64_t NVMeFixPlugin::PM::GetActivePowerState(void* controller) {
 
 uint64_t NVMeFixPlugin::PM::initialPowerStateForDomainState(void* controller, uint64_t domainState) {
 	DBGLOG("pm", "initialPowerStateForDomainState");
-	return GetActivePowerState(controller);
+
+	auto& plugin = NVMeFixPlugin::globalPlugin();
+	if (atomic_load_explicit(&plugin.solvedSymbols, memory_order_acquire))
+		return GetActivePowerState(controller);
+	else
+		return plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState(controller, domainState);
 }
 
 bool NVMeFixPlugin::PM::activityTickle(void* controller, unsigned long type, unsigned long stateNumber) {

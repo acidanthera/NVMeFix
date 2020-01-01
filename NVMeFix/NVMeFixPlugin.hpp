@@ -224,6 +224,7 @@ private:
 		IOPMPowerState* powerStates {nullptr};
 		size_t nstates {0};
 		IOLock* lck {nullptr};
+		IOService* pm {nullptr};
 
 		static void deleter(ControllerEntry* entry) {
 			assert(entry);
@@ -232,11 +233,13 @@ private:
 				delete[] entry->powerStates;
 			if (entry->lck)
 				IOLockFree(entry->lck);
+
 			delete entry;
 		}
 
 		explicit ControllerEntry(IOService* c) : controller(c) {
 			lck = IOLockAlloc();
+			assert(lck);
 		}
 	};
 
@@ -264,10 +267,22 @@ private:
 		static void ThreadEntry(void*);
 		static IOReturn setPowerState(void*,unsigned long,IOService*);
 
+
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
 	private:
 		NVMeFixPlugin& plugin;
 	} PM;
+};
+
+class NVMePMProxy : public IOService {
+public:
+	OSDeclareDefaultStructors(NVMePMProxy)
+	virtual IOReturn setPowerState(
+		unsigned long powerStateOrdinal,
+		IOService *   whatDevice ) override;
+	virtual bool activityTickle(
+	unsigned long type,
+	unsigned long stateNumber = 0 ) override;
 };
 
 #endif /* NVMeFixPlugin_h */
