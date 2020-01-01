@@ -208,8 +208,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	bool apstAllowed = !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
 		entry.ps_max_latency_us > 0;
 
-	if (!PM.init(entry, ctrl, apste || apstAllowed))
-		SYSLOG("pm", "Failed to initialise power management");
+//	if (!PM.init(entry, ctrl, apste || apstAllowed))
+//		SYSLOG("pm", "Failed to initialise power management");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)

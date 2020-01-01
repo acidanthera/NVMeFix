@@ -43,6 +43,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		DBGLOG("pm", "Failed to init IOService");
 		return false;
 	}
+	static_cast<NVMePMProxy*>(entry.pm)->entry = &entry;
 
 	if (entry.quirks & NVMe::NVME_QUIRK_SIMPLE_SUSPEND) {
 		SYSLOG("pm", "Using PCI PM due to quirk");
@@ -145,17 +146,16 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	entry.pm->PMinit();
 	parent->joinPMtree(entry.pm);
 
-	/* Judging by IOServicePM source it should work without stop/init */
 	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates,
 														entry.nstates);
 	if (status != kIOReturnSuccess) {
 		SYSLOG("pm", "registerPowerDriver failed with 0x%x", status);
 		goto fail;
 	}
-//	entry.controller->PMinit();
 	entry.pm->joinPMtree(entry.controller);
+	entry.controller->registerPowerDriver(entry.controller, plugin.kextFuncs.IONVMeController.ReturnPowerStatesArray(entry.controller), plugin.kextFuncs.IONVMeController.GetNumPowerStates(entry.controller));
 
-	status = entry.pm->makeUsable();
+	status = entry.pm->makeUsable() && entry.controller->makeUsable();
 	if (status != kIOReturnSuccess) {
 		SYSLOG("pm", "makeUsable failed with 0x%x", status);
 		goto fail;
@@ -180,7 +180,14 @@ OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
 	DBGLOG("pm", "setPowerState %ul", powerStateOrdinal);
-	return IOPMAckImplied;
+	unsigned long ps = 0;
+	if (powerStateOrdinal > 0 &&
+		entry->powerStates[powerStateOrdinal].capabilityFlags & kIOPMDeviceUsable)
+		ps = 2;
+	else
+		ps = 1;
+
+	return entry->controller->setPowerState(ps, entry->controller);
 }
 
 bool NVMePMProxy::activityTickle(unsigned long type, unsigned long stateNumber) {
@@ -189,29 +196,10 @@ bool NVMePMProxy::activityTickle(unsigned long type, unsigned long stateNumber) 
 }
 
 bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {
-	return true;
-
 	auto idx = plugin.kextInfo.loadIndex;
 	bool ret =
-		plugin.kextFuncs.IONVMeController.GetActivePowerState.solve(kp, idx) &&
-		plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState.solve(kp, idx) &&
-		kp.solveSymbol(idx, "__ZTV16IONVMeController") &&
-		plugin.kextFuncs.IONVMeController.ThreadEntry.solve(kp, idx) &&
-		plugin.kextFuncs.IONVMeController.setPowerState.solve(kp, idx);
-
-	/* mov ecx, [rbx+0x188] */
-	ret &= plugin.kextMembers.IONVMeController.fProposedPowerState.fromFunc(
-				plugin.kextFuncs.IONVMeController.ThreadEntry.fptr, 0x8b, 1, 3);
-
-	ret &= plugin.kextFuncs.IONVMeController.GetActivePowerState.route(kp, idx,
-																		   GetActivePowerState) &&
-	plugin.kextFuncs.IONVMeController.initialPowerStateForDomainState.route(kp,
-													idx,
-													initialPowerStateForDomainState) &&
-	plugin.kextFuncs.IONVMeController.activityTickle.routeVirtual(kp, idx,
-													"__ZTV16IONVMeController", 249, activityTickle) &&
-	plugin.kextFuncs.IONVMeController.ThreadEntry.route(kp, idx, ThreadEntry) &&
-	plugin.kextFuncs.IONVMeController.setPowerState.route(kp, idx, setPowerState);
+		plugin.kextFuncs.IONVMeController.GetNumPowerStates.solve(kp, idx) &&
+		plugin.kextFuncs.IONVMeController.ReturnPowerStatesArray.solve(kp, idx);
 
 	return ret;
 }

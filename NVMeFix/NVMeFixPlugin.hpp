@@ -31,6 +31,8 @@
 
 class NVMeFixPlugin {
 public:
+	friend class NVMePMProxy;
+
 	void init();
 	void deinit();
 	static NVMeFixPlugin& globalPlugin();
@@ -118,6 +120,9 @@ private:
 			};
 			Func<IOPMPowerState*,void*> ReturnPowerStatesArray {
 				"__ZN16IONVMeController22ReturnPowerStatesArrayEv"
+			};
+			Func<uint64_t,void*> GetNumPowerStates {
+				"__ZN16IONVMeController17GetNumPowerStatesEv"
 			};
 			Func<void,void*> ThreadEntry {
 				"__ZN16IONVMeController11ThreadEntryEv"
@@ -233,6 +238,10 @@ private:
 				delete[] entry->powerStates;
 			if (entry->lck)
 				IOLockFree(entry->lck);
+			if (entry->pm) {
+				entry->pm->PMstop();
+				entry->pm->release();
+			}
 
 			delete entry;
 		}
@@ -267,7 +276,6 @@ private:
 		static void ThreadEntry(void*);
 		static IOReturn setPowerState(void*,unsigned long,IOService*);
 
-
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
 	private:
 		NVMeFixPlugin& plugin;
@@ -275,14 +283,16 @@ private:
 };
 
 class NVMePMProxy : public IOService {
-public:
 	OSDeclareDefaultStructors(NVMePMProxy)
+public:
 	virtual IOReturn setPowerState(
 		unsigned long powerStateOrdinal,
 		IOService *   whatDevice ) override;
 	virtual bool activityTickle(
 	unsigned long type,
 	unsigned long stateNumber = 0 ) override;
+
+	NVMeFixPlugin::ControllerEntry* entry {nullptr};
 };
 
 #endif /* NVMeFixPlugin_h */
