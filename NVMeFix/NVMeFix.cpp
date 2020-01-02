@@ -151,7 +151,9 @@ void NVMeFixPlugin::handleControllers() {
 	DBGLOG("nvmef", "handleControllers for %u controllers", controllers.size());
 	for (size_t i = 0; i < controllers.size(); i++) {
 		IOLockLock(controllers[i]->lck);
+		controllers[i]->controller->retain();
 		handleController(*controllers[i]);
+		controllers[i]->controller->release();
 		IOLockUnlock(controllers[i]->lck);
 	}
 }
