@@ -43,7 +43,7 @@
 	<string>Root</string>
 	<key>IOKitPersonalities</key>
 	<dict>
-		<key>$(PRODUCT_BUNDLE_IDENTIFIER)</key>
+		<key>org.acidanthera.NVMeFix</key>
 		<dict>
 			<key>CFBundleIdentifier</key>
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
