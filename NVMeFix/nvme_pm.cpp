@@ -150,10 +150,18 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 	unsigned dword11 = ((static_cast<unsigned>(entry->nstates) - 1) -
 						static_cast<unsigned>(powerStateOrdinal)) & 0b1111;
 	if (IOLockTryLock(entry->lck)) {
-		auto ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
-									   true);
-		if (ret != kIOReturnSuccess)
-			SYSLOG("pm", "Failed to set power state");
+		uint32_t res {};
+		auto ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, nullptr, nullptr, &res,
+			false);
+		res &= 0b1111;
+		if (!ret) {
+			SYSLOG("pm", "Failed to get power state");
+		} else if (res < entry->nstates - 1) { /* Only transition to op state if we're not in nop state due to APST */
+			ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
+										   true);
+			if (ret != kIOReturnSuccess)
+				SYSLOG("pm", "Failed to set power state");
+		}
 
 		IOLockUnlock(entry->lck);
 	}
