@@ -215,25 +215,25 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
-		DBGLOG("nvmef", "APST status %d", apste);
+		DBGLOG("apst", "APST status %d", apste);
 #endif
 
 	if (!apste && apstAllowed) {
-		DBGLOG("nvmef", "Configuring APST");
+		DBGLOG("apst", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
 		else /* Assume we turn APST on without double checking in RELEASE builds */
 			apste = true;
 	} else
-		DBGLOG("nvmef", "Not configuring APST (it is already enable or quirks prohibit it)");
+		DBGLOG("apst", "Not configuring APST (it is already enabled or quirks prohibit it)");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess) {
-		DBGLOG("nvmef", "APST status %d", apste);
+		DBGLOG("apst", "APST status %d", apste);
 	}
 	if (apste && dumpAPST(entry, ctrl->npss))
-		DBGLOG("nvmef", "Failed to dump APST table");
+		DBGLOG("apst", "Failed to dump APST table");
 #endif
 
 	entry.controller->setProperty("apst", apste);
