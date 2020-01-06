@@ -140,8 +140,6 @@ fail:
 OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
-	DBGLOG("pm", "setPowerState %u", powerStateOrdinal);
-
 	if (powerStateOrdinal == 0)
 		return kIOPMAckImplied;
 
@@ -157,6 +155,8 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 		if (ret != kIOReturnSuccess) {
 			SYSLOG("pm", "Failed to get power state");
 		} else if (res < entry->nstates - 1) { /* Only transition to op state if we're not in nop state due to APST */
+			DBGLOG("pm", "setPowerState %u", powerStateOrdinal);
+
 			ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
 										   true);
 			if (ret != kIOReturnSuccess)
