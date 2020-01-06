@@ -490,14 +490,13 @@ bool NVMeFixPlugin::terminatedNotificationHandler(void* that, void* , IOService*
 	assert(plugin);
 	assert(service && service->metaCast("IONVMeController"));
 
+	/* Controller retain count should equal 0, so we don't need to hold its lock now */
 	IOLockLock(plugin->lck);
 	for (size_t i = 0; i < plugin->controllers.size(); i++)
-		if (plugin->controllers[i]->controller == service &&
-			IOLockTryLock(plugin->controllers[i]->lck)) {
-			IOLockUnlock(plugin->controllers[i]->lck);
+		if (plugin->controllers[i]->controller == service) {
 			plugin->controllers.erase(i);
 			break;
-		}
+	   }
 	IOLockUnlock(plugin->lck);
 
 	return false;
@@ -528,7 +527,7 @@ void NVMeFixPlugin::init() {
 		goto fail;
 	}
 
-	terminationNotifier = IOService::addMatchingNotification(gIOWillTerminateNotification,
+	terminationNotifier = IOService::addMatchingNotification(gIOTerminatedNotification,
 							IOService::serviceMatching("IONVMeController"),
 							terminatedNotificationHandler,
 						    this);
