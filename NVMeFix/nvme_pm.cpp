@@ -140,6 +140,8 @@ fail:
 OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
+	DBGLOG("pm", "setPowerState %lu", powerStateOrdinal);
+
 	if (powerStateOrdinal == 0)
 		return kIOPMAckImplied;
 
@@ -152,10 +154,13 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 		auto ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, nullptr, nullptr, &res,
 			false);
 		res &= 0b1111;
+
+		DBGLOG("pm", "Current ps 0x%x, proposed 0x%x", res, dword11);
+
 		if (ret != kIOReturnSuccess) {
 			SYSLOG("pm", "Failed to get power state");
 		} else if (res < entry->nstates - 1) { /* Only transition to op state if we're not in nop state due to APST */
-			DBGLOG("pm", "setPowerState %u", powerStateOrdinal);
+			DBGLOG("pm", "Setting power state %u", powerStateOrdinal);
 
 			ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
 										   true);
@@ -164,7 +169,8 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 		}
 
 		IOLockUnlock(entry->lck);
-	}
+	} else
+		DBGLOG("pm", "Failed to obtain entry lock");
 
 	/**
 	 * FIXME: We should return entry + exit + switching overhead latency here, but at least in my tests
