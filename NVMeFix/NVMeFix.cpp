@@ -84,7 +84,7 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 														0x89, 4, 3);
 	if (res)
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
-	res &= PM.solveSymbols(kp);
+//	res &= PM.solveSymbols(kp);
 	if (!res)
 		DBGLOG("nvmef", "Failed to solve symbols");
 	return res;
