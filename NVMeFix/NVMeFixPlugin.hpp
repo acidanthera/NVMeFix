@@ -288,9 +288,6 @@ public:
 	virtual IOReturn setPowerState(
 		unsigned long powerStateOrdinal,
 		IOService *   whatDevice ) override;
-	virtual bool activityTickle(
-	unsigned long type,
-	unsigned long stateNumber = 0 ) override;
 
 	NVMeFixPlugin::ControllerEntry* entry {nullptr};
 };

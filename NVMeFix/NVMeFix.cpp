@@ -84,7 +84,7 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 														0x89, 4, 3);
 	if (res)
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
-//	res &= PM.solveSymbols(kp);
+	res &= PM.solveSymbols(kp);
 	if (!res)
 		DBGLOG("nvmef", "Failed to solve symbols");
 	return res;
@@ -210,8 +210,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	bool apstAllowed = !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
 		entry.ps_max_latency_us > 0;
 
-//	if (!PM.init(entry, ctrl, apste || apstAllowed))
-//		SYSLOG("pm", "Failed to initialise power management");
+	if (!PM.init(entry, ctrl, apste || apstAllowed))
+		SYSLOG("pm", "Failed to initialise power management");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, apste) == kIOReturnSuccess)
@@ -290,7 +290,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 	}
 
 	if (!desc || prepared) {
-		auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1);
+		auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1); /* Set 0b10 to tickle */
 
 		if (!req) {
 			DBGLOG("feature", "IONVMeController::GetRequest failed");
