@@ -147,8 +147,8 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 
 	auto& plugin = NVMeFixPlugin::globalPlugin();
 
-	unsigned dword11 = (static_cast<unsigned>(entry->nstates) - 1) -
-						static_cast<unsigned>(powerStateOrdinal);
+	unsigned dword11 = ((static_cast<unsigned>(entry->nstates) - 1) -
+						static_cast<unsigned>(powerStateOrdinal)) & 0b1111;
 	if (IOLockTryLock(entry->lck)) {
 		auto ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
 									   true);
