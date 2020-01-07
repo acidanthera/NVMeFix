@@ -1,0 +1,32 @@
+language: cpp
+
+matrix:
+  include:
+  - os: osx
+    name: "Build"
+    osx_image: xcode10.2
+    compiler: clang
+
+    script:
+      - src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/bootstrap.sh) && eval "$src" || exit 1
+      - xcodebuild -configuration Debug
+      - xcodebuild -configuration Release
+
+    deploy:
+      provider: releases
+      skip_cleanup: true
+      file: "build/*/*.zip"
+      file_glob: true
+      api_key:
+        secure: CPoor4cnvytyConXKkcy6ONx3NKLhhWrkMBDssl+0G0wmWiCp6iXD0HMbkJFUzPBZwl1jRurFXZS3E/7xm8OwpfN2XUBqg8WL/ElDYGBu1zN7QDQYXtJiIBcS/IfbJ60Ecxt0KGZXxa3kVOPLdtDsZbrZbocHwxcXzQowjb8vQFZR3JHdrrYQTluNs/E/ud0zoO+hp5pGr6IyA0uoeNouDx94NEI4KNZ8n6OiZtYfAuS6Sg1Kj/rPZrwNxw8wUFV+1hTK9tUZGJbvEWugSE1p/2r2xWdiFopEETWRid8fV6u5nAatONxW0IvbY/SeLWe1OpHFraFkM5IKUyspsEyvLpWZG9GZhuenV/oz+1JIA8pzzmveNGDMY0cWN63HpIhtjf9RupfN6LcM9usd+26xcdbEWURIxCqftJCe5HVbFMeNLQd4a7vJcWxP/1gP2hNrZEmJQk9Bx4Wtoh72aFRfKa5oHcdGSZfKroq2Il7TsuafqnIzHM3k5azldgweCS6P2UbFIyN6s55gD+quRrD9ZGsMw2mQLK4ywA3SuplYpBBKuYxyqQICGadhQ0pNR3fOJTxLo99zPO8bHukBWrC0f0OvNFlOPbQB2kM2brVTn22AXFHdt6g5laBydgE9kOVuKUZsqE5wpKCr9f03yForIxdR2XsTlfXQIg1oS1+930=
+      on:
+        tags: true
+  - os: osx
+    name: "Analyze Clang"
+    osx_image: xcode11
+    compiler: clang
+
+    script:
+      - src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/bootstrap.sh) && eval "$src" || exit 1
+      - xcodebuild analyze -quiet -scheme NVMeFix -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
+      - xcodebuild analyze -quiet -scheme NVMeFix -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
