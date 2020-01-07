@@ -15,7 +15,6 @@
 #include <Library/LegacyIOService.h>
 #include <IOKit/IOService.h>
 #include <IOKit/pwr_mgt/IOPM.h>
-//#include <IOKit/pwr_mgt/RootDomain.h> /* Introduces compilation errors */
 #include <kern/assert.h>
 
 #include "NVMeFixPlugin.hpp"

@@ -129,7 +129,11 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 					SYSLOG("nvmef", "Failed to allocate ControllerEntry memory");
 					break;
 				}
-				plugin->controllers.push_back(entry);
+				if (!plugin->controllers.push_back(entry)) {
+					SYSLOG("nvmef", "Failed to insert ControllerEntry memory");
+					ControllerEntry::deleter(entry);
+					break;
+				}
 				break;
 			}
 		}
