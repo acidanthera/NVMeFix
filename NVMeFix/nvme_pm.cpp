@@ -160,7 +160,7 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 		if (ret != kIOReturnSuccess) {
 			SYSLOG("pm", "Failed to get power state");
 		} else if (res < entry->nstates - 1) { /* Only transition to op state if we're not in nop state due to APST */
-			DBGLOG("pm", "Setting power state %u", powerStateOrdinal);
+			DBGLOG("pm", "Setting power state 0x%x", dword11);
 
 			ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
 										   true);
