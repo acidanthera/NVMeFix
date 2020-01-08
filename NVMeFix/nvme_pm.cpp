@@ -44,11 +44,6 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	}
 	static_cast<NVMePMProxy*>(entry.pm)->entry = &entry;
 
-	if (entry.quirks & NVMe::NVME_QUIRK_SIMPLE_SUSPEND) {
-		SYSLOG("pm", "Using PCI PM due to quirk");
-		return false;
-	}
-
 	for (int state = ctrl->npss; state >= 0; state--)
 		if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
 			op++;
