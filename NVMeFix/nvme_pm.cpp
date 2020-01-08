@@ -142,6 +142,7 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 
 	unsigned dword11 = ((static_cast<unsigned>(entry->nstates) - 1) -
 						static_cast<unsigned>(powerStateOrdinal)) & 0b1111;
+	/* It's ok to skip active PM */
 	if (IOLockTryLock(entry->lck)) {
 		uint32_t res {};
 		auto ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, nullptr, nullptr, &res,
@@ -174,6 +175,8 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 
 IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigned long stateNumber,
 											IOService *whatDevice) {
+	DBGLOG("pm", "powerStateDidChangeTo 0x%x", stateNumber);
+
 	/* FIXME: Should we ignore PAUSE->ACTIVE transition? */
 	if (!(capabilities & kIOPMDeviceUsable)) {
 		DBGLOG("pm", "Ignoring transition to non-usable state 0x%x", stateNumber);
@@ -181,36 +184,36 @@ IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigne
 	}
 
 	auto& plugin = NVMeFixPlugin::globalPlugin();
-	if (IOLockTryLock(entry->lck)) {
-		NVMe::nvme_id_ctrl* identify {};
 
-		if (entry->controller != whatDevice) {
-			DBGLOG("pm", "Power state change for irrelevant device");
-			goto done;
-		}
+	/* We only get once chance after wake, so we insist on getting to critical section */
+	IOLockLock(entry->lck);
+	NVMe::nvme_id_ctrl* identify {};
 
-		if (!entry->apstAllowed()) {
-			DBGLOG("pm", "APST not allowed");
-			goto done;
-		}
+	if (entry->controller != whatDevice) {
+		DBGLOG("pm", "Power state change for irrelevant device %s", whatDevice->getMetaClass()->getClassName());
+		goto done;
+	}
 
-		if (!entry->apste) {
-			DBGLOG("pm", "APST not enabled yet; not re-enabling");
-			goto done;
-		}
+	if (!entry->apstAllowed()) {
+		DBGLOG("pm", "APST not allowed");
+		goto done;
+	}
 
-		assert(entry->identify);
-		identify = static_cast<decltype(identify)>(entry->identify->getBytesNoCopy());
-		if (!identify) {
-			DBGLOG("pm", "Failed to get identify bytes");
-			goto done;
-		} else
-			plugin.enableAPST(*entry, identify);
+	if (!entry->apste) {
+		DBGLOG("pm", "APST not enabled yet; not re-enabling");
+		goto done;
+	}
 
-	done:
-		IOLockUnlock(entry->lck);
-	} else
-		DBGLOG("pm", "Failed to obtain entry lock");
+	assert(entry->identify);
+	identify = static_cast<decltype(identify)>(entry->identify->getBytesNoCopy());
+	if (!identify) {
+		DBGLOG("pm", "Failed to get identify bytes");
+		goto done;
+	} else if (!plugin.enableAPST(*entry, identify))
+		DBGLOG("pm", "Failed to re-enable APST");
+
+done:
+	IOLockUnlock(entry->lck);
 
 	return IOPMAckImplied;
 }
