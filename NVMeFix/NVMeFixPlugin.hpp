@@ -255,6 +255,8 @@ private:
 		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 		bool solveSymbols(KernelPatcher&);
 
+		static constexpr unsigned idlePeriod {2}; /* seconds */
+
 		static bool activityTickle(void*,unsigned long,unsigned long);
 
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}

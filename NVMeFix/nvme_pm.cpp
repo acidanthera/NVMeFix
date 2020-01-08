@@ -101,10 +101,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		reinterpret_cast<IOService*>(root)->joinPMtree(entry.pm);
 	assert(root);
 
-	constexpr unsigned idlePeriod {2};
-
-	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates,
-														entry.nstates);
+	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates, entry.nstates);
 	if (status != kIOReturnSuccess) {
 		SYSLOG("pm", "registerPowerDriver failed with 0x%x", status);
 		goto fail;
