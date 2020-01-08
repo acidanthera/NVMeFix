@@ -34,7 +34,7 @@
 * As we never transition to idle states, we need not freeze the command queue, so we don't have to
 * touch the internal state of IONVMe.
 */
-bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl, bool apste) {
+bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl) {
 	unsigned op {};
 
 	entry.pm = new NVMePMProxy();

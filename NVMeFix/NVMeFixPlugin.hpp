@@ -211,6 +211,11 @@ private:
 		size_t nstates {0};
 		IOLock* lck {nullptr};
 		IOService* pm {nullptr};
+		IOBufferMemoryDescriptor* identify {nullptr};
+
+		bool apstAllowed() {
+			return !(quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) && ps_max_latency_us > 0;
+		}
 
 		static void deleter(ControllerEntry* entry) {
 			assert(entry);
@@ -247,11 +252,7 @@ private:
 							 uint32_t* res, bool set);
 	ControllerEntry* entryForController(IOService*) const;
 	struct PM {
-		/**
-		 * Initialization is meant to be executed in critical section so that
-		 * PM function hooks do not observe incomplete result of initialization.
-		 */
-		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*, bool);
+		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 		bool solveSymbols(KernelPatcher&);
 
 		static bool activityTickle(void*,unsigned long,unsigned long);

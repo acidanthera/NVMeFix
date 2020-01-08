@@ -193,6 +193,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		return;
 	}
 
+	entry.identify = identifyDesc;
+
 	/* Get additional quirks based on identify data */
 	entry.quirks |= NVMe::quirksForController(ctrl->vid, ctrl->mn, ctrl->fr);
 
@@ -208,10 +210,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 #endif
 
 	bool apste {false};
-	bool apstAllowed = !(entry.quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) &&
-		entry.ps_max_latency_us > 0;
 
-	if (!PM.init(entry, ctrl, apste || apstAllowed))
+	if (!PM.init(entry, ctrl))
 		SYSLOG("pm", "Failed to initialise power management");
 
 #ifdef DEBUG
@@ -219,7 +219,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		DBGLOG("apst", "APST status %d", apste);
 #endif
 
-	if (!apste && apstAllowed) {
+	if (!apste && entry.apstAllowed()) {
 		DBGLOG("apst", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
@@ -238,8 +238,6 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 #endif
 
 	entry.controller->setProperty("apst", apste);
-
-	identifyDesc->release();
 }
 
 IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescriptor*& desc) {
