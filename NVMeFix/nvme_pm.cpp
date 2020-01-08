@@ -44,6 +44,11 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	}
 	static_cast<NVMePMProxy*>(entry.pm)->entry = &entry;
 
+	if (entry.apstAllowed()) {
+		DBGLOG("pm", "Registering power change interest");
+		entry.controller->registerInterestedDriver(entry.pm);
+	}
+
 	for (int state = ctrl->npss; state >= 0; state--)
 		if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
 			op++;
@@ -122,10 +127,7 @@ fail:
 		delete[] entry.powerStates;
 		entry.powerStates = nullptr;
 	}
-	if (entry.pm) {
-		entry.pm->release();
-		entry.pm = nullptr;
-	}
+	/* Do not release PM IOService -- we need it for tracking controller power state change */
 	return false;
 }
 
@@ -169,6 +171,49 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 	 * it is always 0.
 	 */
 	return kIOPMAckImplied; /* No real way to signal error (not that we expect any) */
+}
+
+IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigned long stateNumber,
+											IOService *whatDevice) {
+	/* FIXME: Should we ignore PAUSE->ACTIVE transition? */
+	if (!(capabilities & kIOPMDeviceUsable)) {
+		DBGLOG("pm", "Ignoring transition to non-usable state 0x%x", stateNumber);
+		return kIOPMAckImplied;
+	}
+
+	auto& plugin = NVMeFixPlugin::globalPlugin();
+	if (IOLockTryLock(entry->lck)) {
+		NVMe::nvme_id_ctrl* identify {};
+
+		if (entry->controller != whatDevice) {
+			DBGLOG("pm", "Power state change for irrelevant device");
+			goto done;
+		}
+
+		if (!entry->apstAllowed()) {
+			DBGLOG("pm", "APST not allowed");
+			goto done;
+		}
+
+		if (!entry->apste) {
+			DBGLOG("pm", "APST not enabled yet; not re-enabling");
+			goto done;
+		}
+
+		assert(entry->identify);
+		identify = static_cast<decltype(identify)>(entry->identify->getBytesNoCopy());
+		if (!identify) {
+			DBGLOG("pm", "Failed to get identify bytes");
+			goto done;
+		} else
+			plugin.enableAPST(*entry, identify);
+
+	done:
+		IOLockUnlock(entry->lck);
+	} else
+		DBGLOG("pm", "Failed to obtain entry lock");
+
+	return IOPMAckImplied;
 }
 
 bool NVMeFixPlugin::PM::solveSymbols(KernelPatcher& kp) {

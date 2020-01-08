@@ -274,6 +274,11 @@ public:
 		unsigned long powerStateOrdinal,
 		IOService *   whatDevice ) override;
 
+	virtual IOReturn powerStateDidChangeTo(
+		IOPMPowerFlags  capabilities,
+		unsigned long   stateNumber,
+		IOService *     whatDevice ) override;
+
 	NVMeFixPlugin::ControllerEntry* entry {nullptr};
 };
 
