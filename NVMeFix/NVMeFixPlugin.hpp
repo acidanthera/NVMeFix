@@ -212,6 +212,7 @@ private:
 		IOLock* lck {nullptr};
 		IOService* pm {nullptr};
 		IOBufferMemoryDescriptor* identify {nullptr};
+		bool apste {false};
 
 		bool apstAllowed() {
 			return !(quirks & NVMe::nvme_quirks::NVME_QUIRK_NO_APST) && ps_max_latency_us > 0;
@@ -245,6 +246,7 @@ private:
 	void handleControllers();
 	void handleController(ControllerEntry&);
 	IOReturn identify(ControllerEntry&,IOBufferMemoryDescriptor*&);
+	bool enableAPST(ControllerEntry&, const NVMe::nvme_id_ctrl*);
 	IOReturn configureAPST(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 	IOReturn APSTenabled(ControllerEntry&, bool&);
 	IOReturn dumpAPST(ControllerEntry&, int npss);

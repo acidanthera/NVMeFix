@@ -208,35 +208,11 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	DBGLOG("nvmef", "Identified model %s (vid 0x%x)", mn, ctrl->vid);
 #endif
 
-	bool apste {false};
-
 	if (!PM.init(entry, ctrl))
 		SYSLOG("pm", "Failed to initialise power management");
 
-#ifdef DEBUG
-	if (APSTenabled(entry, apste) == kIOReturnSuccess)
-		DBGLOG("apst", "APST status %d", apste);
-#endif
-
-	if (!apste && entry.apstAllowed()) {
-		DBGLOG("apst", "Configuring APST");
-		auto res = configureAPST(entry, ctrl);
-		if (res != kIOReturnSuccess)
-			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
-		else /* Assume we turn APST on without double checking in RELEASE builds */
-			apste = true;
-	} else
-		DBGLOG("apst", "Not configuring APST (it is already enabled or quirks prohibit it)");
-
-#ifdef DEBUG
-	if (APSTenabled(entry, apste) == kIOReturnSuccess) {
-		DBGLOG("apst", "APST status %d", apste);
-	}
-	if (apste && dumpAPST(entry, ctrl->npss))
-		DBGLOG("apst", "Failed to dump APST table");
-#endif
-
-	entry.controller->setProperty("apst", apste);
+	if (!enableAPST(entry, ctrl))
+		SYSLOG("apst", "Failed to enable APST");
 }
 
 IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescriptor*& desc) {
@@ -340,6 +316,34 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 		desc->complete();
 
 	return ret;
+}
+
+bool NVMeFixPlugin::enableAPST(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl) {
+#ifdef DEBUG
+	if (APSTenabled(entry, entry.apste) == kIOReturnSuccess)
+		DBGLOG("apst", "APST status %d", entry.apste);
+#endif
+
+	if (!entry.apste && entry.apstAllowed()) {
+		DBGLOG("apst", "Configuring APST");
+		auto res = configureAPST(entry, ctrl);
+		if (res != kIOReturnSuccess)
+			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
+		else /* Assume we turn APST on without double checking in RELEASE builds */
+			entry.apste = true;
+	} else
+		DBGLOG("apst", "Not configuring APST (it is already enabled or quirks prohibit it)");
+
+#ifdef DEBUG
+	if (APSTenabled(entry, entry.apste) == kIOReturnSuccess) {
+		DBGLOG("apst", "APST status %d", entry.apste);
+	}
+	if (entry.apste && dumpAPST(entry, ctrl->npss))
+		DBGLOG("apst", "Failed to dump APST table");
+#endif
+
+	entry.controller->setProperty("apst", entry.apste);
+	return entry.apste;
 }
 
 /* linux/drivers/nvme/host/core.c:nvme_configure_apst */
