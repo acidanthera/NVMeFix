@@ -215,14 +215,17 @@ private:
 		static void deleter(ControllerEntry* entry) {
 			assert(entry);
 
-			if (entry->powerStates)
-				delete[] entry->powerStates;
-			if (entry->lck)
-				IOLockFree(entry->lck);
+			/* PM functions don't check for validity of entry or its members, so let's stop it early */
 			if (entry->pm) {
 				entry->pm->PMstop();
 				entry->pm->release();
 			}
+			if (entry->powerStates)
+				delete[] entry->powerStates;
+			if (entry->identify)
+				entry->identify->release();
+			if (entry->lck)
+				IOLockFree(entry->lck);
 
 			delete entry;
 		}
