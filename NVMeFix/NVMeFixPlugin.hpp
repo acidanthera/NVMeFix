@@ -112,26 +112,7 @@ private:
 			Func<void,void*,void*> ReturnRequest {
 				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
 			};
-			Func<IOReturn,void*,unsigned long,IOService*> setPowerState {
-				"__ZN16IONVMeController13setPowerStateEmP9IOService"
-			};
-			Func<uint64_t,void*> GetActivePowerState {
-				"__ZN16IONVMeController19GetActivePowerStateEv"
-			};
-			Func<IOPMPowerState*,void*> ReturnPowerStatesArray {
-				"__ZN16IONVMeController22ReturnPowerStatesArrayEv"
-			};
-			Func<uint64_t,void*> GetNumPowerStates {
-				"__ZN16IONVMeController17GetNumPowerStatesEv"
-			};
-			Func<void,void*> ThreadEntry {
-				"__ZN16IONVMeController11ThreadEntryEv"
-			};
-			Func<uint64_t,void*,uint64_t> initialPowerStateForDomainState {
-				"__ZN16IONVMeController31initialPowerStateForDomainStateEm"
-			};
 			Func<bool,void*,unsigned long, unsigned long> activityTickle {};
-			Func<IOReturn,void*, unsigned long> changePowerStateToPriv {};
 		} IONVMeController;
 
 		struct {
@@ -270,11 +251,7 @@ private:
 		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*, bool);
 		bool solveSymbols(KernelPatcher&);
 
-		static uint64_t GetActivePowerState(void*);
-		static uint64_t initialPowerStateForDomainState(void*,uint64_t);
 		static bool activityTickle(void*,unsigned long,unsigned long);
-		static void ThreadEntry(void*);
-		static IOReturn setPowerState(void*,unsigned long,IOService*);
 
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
 	private:
