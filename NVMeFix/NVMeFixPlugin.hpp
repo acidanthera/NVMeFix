@@ -223,6 +223,8 @@ private:
 
 			/* PM functions don't check for validity of entry or its members, so let's stop it early */
 			if (entry->pm) {
+				if (entry->controller)
+					entry->controller->deRegisterInterestedDriver(entry->pm);
 				entry->pm->PMstop();
 				entry->pm->release();
 			}
