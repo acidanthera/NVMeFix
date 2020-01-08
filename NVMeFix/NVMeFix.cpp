@@ -331,9 +331,10 @@ bool NVMeFixPlugin::enableAPST(ControllerEntry& entry, const NVMe::nvme_id_ctrl*
 	if (entry.apstAllowed()) {
 		DBGLOG("apst", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
-		if (res != kIOReturnSuccess)
+		if (res != kIOReturnSuccess) {
 			DBGLOG("nvmef", "Failed to configure APST with 0x%x", res);
-		else /* Assume we turn APST on without double checking in RELEASE builds */
+			entry.apste = false;
+		} else /* Assume we turn APST on without double checking in RELEASE builds */
 			entry.apste = true;
 	} else
 		DBGLOG("apst", "Not configuring APST (it is already enabled or quirks prohibit it)");
