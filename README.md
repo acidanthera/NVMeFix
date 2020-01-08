@@ -22,7 +22,8 @@ hibernaton with full disk encryption on.
 Installation
 ------------
 
-NVMeFix requires at least Lilu 1.4.1.
+NVMeFix requires at least Lilu 1.4.1 and at least 10.14 system version. It may be compatible with
+older systems, but has not been tested.
 
 It may be installed to `/Library/Extensions`, or injected by the bootloader.
 
@@ -32,6 +33,7 @@ Configuration
 `-nvmefdbg` enables detailed logging for `DEBUG` build.
 
 `-nvmefoff` disables the kext.
+
 Some SSDs misbehave when APST is on. NVMeFix attempts to detect broken motherboard and SSD
 combinations and work around them. Motherboard is detected via `IODeviceTree:/efi/platform`
 `OEMProduct`, `OEMVendor` and `OEMBoard` keys injected by the bootloader.
