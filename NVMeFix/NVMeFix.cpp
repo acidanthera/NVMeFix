@@ -328,7 +328,7 @@ bool NVMeFixPlugin::enableAPST(ControllerEntry& entry, const NVMe::nvme_id_ctrl*
 		DBGLOG("apst", "APST status %d", entry.apste);
 #endif
 
-	if (!entry.apste && entry.apstAllowed()) {
+	if (entry.apstAllowed()) {
 		DBGLOG("apst", "Configuring APST");
 		auto res = configureAPST(entry, ctrl);
 		if (res != kIOReturnSuccess)
