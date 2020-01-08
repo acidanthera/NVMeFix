@@ -180,7 +180,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 
 	IOBufferMemoryDescriptor* identifyDesc {nullptr};
 
-	if (identify(entry, identifyDesc) != kIOReturnSuccess) {
+	if (identify(entry, identifyDesc) != kIOReturnSuccess || !identifyDesc) {
 		SYSLOG("nvmef", "Failed to identify controller");
 		return;
 	}
@@ -188,7 +188,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	auto ctrl = reinterpret_cast<NVMe::nvme_id_ctrl*>(identifyDesc->getBytesNoCopy());
 	if (!ctrl) {
 		DBGLOG("nvmef", "Failed to get identify buffer bytes");
-		identifyDesc->release();
+		if (identifyDesc)
+			identifyDesc->release();
 		return;
 	}
 
