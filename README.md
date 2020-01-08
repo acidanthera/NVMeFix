@@ -29,6 +29,9 @@ It may be installed to `/Library/Extensions`, or injected by the bootloader.
 Configuration
 -------------
 
+`-nvmefdbg` enables detailed logging for `DEBUG` build.
+
+`-nvmefoff` disables the kext.
 Some SSDs misbehave when APST is on. NVMeFix attempts to detect broken motherboard and SSD
 combinations and work around them. Motherboard is detected via `IODeviceTree:/efi/platform`
 `OEMProduct`, `OEMVendor` and `OEMBoard` keys injected by the bootloader.
