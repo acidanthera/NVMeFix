@@ -205,8 +205,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	lilu_os_memcpy(mn, ctrl->mn, sizeof(mn));
 	mn[sizeof(mn) - 1] = '\0';
 
-	DBGLOG("nvmef", "Identified model %s", mn);
-	DBGLOG("nvmef", "vid 0x%x ssvid 0x%x", ctrl->vid, ctrl->ssvid);
+	DBGLOG("nvmef", "Identified model %s (vid 0x%x)", mn, ctrl->vid);
 #endif
 
 	bool apste {false};
