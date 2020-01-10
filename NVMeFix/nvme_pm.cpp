@@ -17,6 +17,7 @@
 #include <IOKit/pwr_mgt/IOPM.h>
 #include <kern/assert.h>
 
+#include "Log.hpp"
 #include "NVMeFixPlugin.hpp"
 
 /**
@@ -38,13 +39,13 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 
 	entry.pm = new NVMePMProxy();
 	if (entry.pm && !entry.pm->init()) {
-		DBGLOG("pm", "Failed to init IOService");
+		DBGLOG(Log::PM, "Failed to init IOService");
 		return false;
 	}
 	static_cast<NVMePMProxy*>(entry.pm)->entry = &entry;
 
 	if (entry.apstAllowed()) {
-		DBGLOG("pm", "Registering power change interest");
+		DBGLOG(Log::PM, "Registering power change interest");
 		entry.controller->registerInterestedDriver(entry.pm);
 	}
 
@@ -53,17 +54,17 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 			op++;
 
 	if (op <= 1) {
-		SYSLOG("pm", "Controller declares too few power states, using PCI PM");
+		SYSLOG(Log::PM, "Controller declares too few power states, using PCI PM");
 		return false;
 	}
 
-	DBGLOG("pm", "npss 0x%x", ctrl->npss);
+	DBGLOG(Log::PM, "npss 0x%x", ctrl->npss);
 
 	entry.nstates = 1 /* off */ + op;
 
 	entry.powerStates = new IOPMPowerState[entry.nstates];
 	if (!entry.powerStates) {
-		SYSLOG("pm", "Failed to allocate power state buffer");
+		SYSLOG(Log::PM, "Failed to allocate power state buffer");
 		return false;
 	}
 
@@ -93,11 +94,11 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		/* In non-operational state device is not usable and we may sleep */
 		ps.capabilityFlags |= kIOPMPreventIdleSleep;
 		ps.capabilityFlags |= kIOPMDeviceUsable;
-		DBGLOG("pm", "Setting ps %u capabilityFlags 0x%x", idx, ps.capabilityFlags);
+		DBGLOG(Log::PM, "Setting ps %u capabilityFlags 0x%x", idx, ps.capabilityFlags);
 		idx++;
 	}
 
-	DBGLOG("pm", "Publishing %u states", entry.nstates);
+	DBGLOG(Log::PM, "Publishing %u states", entry.nstates);
 
 	entry.pm->PMinit();
 	auto root = IOService::getPMRootDomain();
@@ -107,13 +108,13 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 
 	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates, entry.nstates);
 	if (status != kIOReturnSuccess) {
-		SYSLOG("pm", "registerPowerDriver failed with 0x%x", status);
+		SYSLOG(Log::PM, "registerPowerDriver failed with 0x%x", status);
 		goto fail;
 	}
 
 	status = entry.pm->makeUsable();
 	if (status != kIOReturnSuccess) {
-		SYSLOG("pm", "makeUsable failed with 0x%x", status);
+		SYSLOG(Log::PM, "makeUsable failed with 0x%x", status);
 		goto fail;
 	}
 
@@ -133,7 +134,7 @@ fail:
 OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
-	DBGLOG("pm", "setPowerState %lu", powerStateOrdinal);
+	DBGLOG(Log::PM, "setPowerState %lu", powerStateOrdinal);
 
 	if (powerStateOrdinal == 0)
 		return kIOPMAckImplied;
@@ -149,22 +150,22 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 			false);
 		res &= 0b1111;
 
-		DBGLOG("pm", "Current ps 0x%x, proposed 0x%x", res, dword11);
+		DBGLOG(Log::PM, "Current ps 0x%x, proposed 0x%x", res, dword11);
 
 		if (ret != kIOReturnSuccess) {
-			SYSLOG("pm", "Failed to get power state");
+			SYSLOG(Log::PM, "Failed to get power state");
 		} else if (res < entry->nstates - 1) { /* Only transition to op state if we're not in nop state due to APST */
-			DBGLOG("pm", "Setting power state 0x%x", dword11);
+			DBGLOG(Log::PM, "Setting power state 0x%x", dword11);
 
 			ret = plugin.NVMeFeatures(*entry, NVMe::NVME_FEAT_POWER_MGMT, &dword11, nullptr, nullptr,
 										   true);
 			if (ret != kIOReturnSuccess)
-				SYSLOG("pm", "Failed to set power state");
+				SYSLOG(Log::PM, "Failed to set power state");
 		}
 
 		IOLockUnlock(entry->lck);
 	} else
-		DBGLOG("pm", "Failed to obtain entry lock");
+		DBGLOG(Log::PM, "Failed to obtain entry lock");
 
 	/**
 	 * FIXME: We should return entry + exit + switching overhead latency here, but at least in my tests
@@ -175,11 +176,11 @@ IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *
 
 IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigned long stateNumber,
 											IOService *whatDevice) {
-	DBGLOG("pm", "powerStateDidChangeTo 0x%x", stateNumber);
+	DBGLOG(Log::PM, "powerStateDidChangeTo 0x%x", stateNumber);
 
 	/* FIXME: Should we ignore PAUSE->ACTIVE transition? */
 	if (!(capabilities & kIOPMDeviceUsable)) {
-		DBGLOG("pm", "Ignoring transition to non-usable state 0x%x", stateNumber);
+		DBGLOG(Log::PM, "Ignoring transition to non-usable state 0x%x", stateNumber);
 		return kIOPMAckImplied;
 	}
 
@@ -190,27 +191,27 @@ IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigne
 	NVMe::nvme_id_ctrl* identify {};
 
 	if (entry->controller != whatDevice) {
-		DBGLOG("pm", "Power state change for irrelevant device %s", whatDevice->getMetaClass()->getClassName());
+		DBGLOG(Log::PM, "Power state change for irrelevant device %s", whatDevice->getMetaClass()->getClassName());
 		goto done;
 	}
 
 	if (!entry->apstAllowed()) {
-		DBGLOG("pm", "APST not allowed");
+		DBGLOG(Log::PM, "APST not allowed");
 		goto done;
 	}
 
 	if (!entry->apste) {
-		DBGLOG("pm", "APST not enabled yet; not re-enabling");
+		DBGLOG(Log::PM, "APST not enabled yet; not re-enabling");
 		goto done;
 	}
 
 	assert(entry->identify);
 	identify = static_cast<decltype(identify)>(entry->identify->getBytesNoCopy());
 	if (!identify) {
-		DBGLOG("pm", "Failed to get identify bytes");
+		DBGLOG(Log::PM, "Failed to get identify bytes");
 		goto done;
 	} else if (!plugin.enableAPST(*entry, identify))
-		DBGLOG("pm", "Failed to re-enable APST");
+		DBGLOG(Log::PM, "Failed to re-enable APST");
 
 done:
 	IOLockUnlock(entry->lck);

@@ -32,6 +32,7 @@
 #include <Headers/kern_util.hpp>
 #include <Headers/plugin_start.hpp>
 
+#include "Log.hpp"
 #include "NVMeFixPlugin.hpp"
 
 static NVMeFixPlugin plugin;
@@ -52,7 +53,7 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 	if (index != plugin->kextInfo.loadIndex)
 		return;
 
-	DBGLOG("nvmef", "processKext %s", plugin->kextInfo.id);
+	DBGLOG(Log::Plugin, "processKext %s", plugin->kextInfo.id);
 
 	if (plugin->solveSymbols(patcher)) {
 		atomic_store_explicit(&plugin->solvedSymbols, true, memory_order_release);
@@ -86,7 +87,7 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
 	res &= PM.solveSymbols(kp);
 	if (!res)
-		DBGLOG("nvmef", "Failed to solve symbols");
+		DBGLOG(Log::Plugin, "Failed to solve symbols");
 	return res;
 }
 
@@ -126,11 +127,11 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 			if (!has) {
 				auto entry = new ControllerEntry(parent);
 				if (!entry) {
-					SYSLOG("nvmef", "Failed to allocate ControllerEntry memory");
+					SYSLOG(Log::Plugin, "Failed to allocate ControllerEntry memory");
 					break;
 				}
 				if (!plugin->controllers.push_back(entry)) {
-					SYSLOG("nvmef", "Failed to insert ControllerEntry memory");
+					SYSLOG(Log::Plugin, "Failed to insert ControllerEntry memory");
 					ControllerEntry::deleter(entry);
 					break;
 				}
@@ -174,7 +175,7 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	uint32_t vendor {};
 	propertyFromParent(entry.controller, "vendor-id", vendor);
 	if (vendor == 0x106b || entry.controller->metaCast("AppleNVMeController")) {
-		SYSLOG("nvmef", "Ignoring Apple controller");
+		SYSLOG(Log::Plugin, "Ignoring Apple controller");
 		return;
 	}
 
@@ -185,13 +186,13 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	IOBufferMemoryDescriptor* identifyDesc {nullptr};
 
 	if (identify(entry, identifyDesc) != kIOReturnSuccess || !identifyDesc) {
-		SYSLOG("nvmef", "Failed to identify controller");
+		SYSLOG(Log::Plugin, "Failed to identify controller");
 		return;
 	}
 
 	auto ctrl = reinterpret_cast<NVMe::nvme_id_ctrl*>(identifyDesc->getBytesNoCopy());
 	if (!ctrl) {
-		DBGLOG("nvmef", "Failed to get identify buffer bytes");
+		DBGLOG(Log::Plugin, "Failed to get identify buffer bytes");
 		if (identifyDesc)
 			identifyDesc->release();
 		return;
@@ -209,14 +210,14 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	lilu_os_memcpy(mn, ctrl->mn, sizeof(mn));
 	mn[sizeof(mn) - 1] = '\0';
 
-	DBGLOG("nvmef", "Identified model %s (vid 0x%x)", mn, ctrl->vid);
+	DBGLOG(Log::Plugin, "Identified model %s (vid 0x%x)", mn, ctrl->vid);
 #endif
 
 	if (!PM.init(entry, ctrl))
-		SYSLOG("pm", "Failed to initialise power management");
+		SYSLOG(Log::PM, "Failed to initialise power management");
 
 	if (!enableAPST(entry, ctrl))
-		SYSLOG("apst", "Failed to enable APST");
+		SYSLOG(Log::APST, "Failed to enable APST");
 }
 
 IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescriptor*& desc) {
@@ -228,7 +229,7 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 	desc = IOBufferMemoryDescriptor::withCapacity(sizeof(NVMe::nvme_id_ctrl), kIODirectionIn);
 
 	if (!desc) {
-		SYSLOG("nvmef", "Failed to init descriptor");
+		SYSLOG(Log::Plugin, "Failed to init descriptor");
 		ret = kIOReturnNoResources;
 		goto fail;
 	}
@@ -237,14 +238,14 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 
 	ret = desc->prepare();
 	if (ret != kIOReturnSuccess) {
-		SYSLOG("nvmef", "Failed to prepare descriptor");
+		SYSLOG(Log::Plugin, "Failed to prepare descriptor");
 		goto fail;
 	}
 	prepared = true;
 
 	ret = kextFuncs.IONVMeController.IssueIdentifyCommand(entry.controller, desc, nullptr, 0);
 	if (ret != kIOReturnSuccess) {
-		SYSLOG("nvmef", "issueIdentifyCommand failed");
+		SYSLOG(Log::Plugin, "issueIdentifyCommand failed");
 		goto fail;
 	}
 
@@ -271,7 +272,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 		auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1); /* Set 0b10 to tickle */
 
 		if (!req) {
-			DBGLOG("feature", "IONVMeController::GetRequest failed");
+			DBGLOG(Log::Feature, "IONVMeController::GetRequest failed");
 			ret = kIOReturnNoResources;
 		} else if (desc)
 			ret = reinterpret_cast<IODMACommand*>(req)->setMemoryDescriptor(desc);
@@ -290,21 +291,21 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 			}
 
 			if (ret != kIOReturnSuccess)
-				DBGLOG("feature", "Failed to prepare DMA command");
+				DBGLOG(Log::Feature, "Failed to prepare DMA command");
 			else {
 				if (desc)
 					ret = kextFuncs.AppleNVMeRequest.GenerateIOVMSegments(req, 0,
 																		  desc->getLength());
 
 				if (ret != kIOReturnSuccess)
-					DBGLOG("feature", "Failed to generate IO VM segments");
+					DBGLOG(Log::Feature, "Failed to generate IO VM segments");
 				else {
 					kextMembers.AppleNVMeRequest.controller.get(req) = entry.controller;
 
 					ret = kextFuncs.IONVMeController.ProcessSyncNVMeRequest(entry.controller,
 																			req);
 					if (ret != kIOReturnSuccess)
-						DBGLOG("feature", "ProcessSyncNVMeRequest failed");
+						DBGLOG(Log::Feature, "ProcessSyncNVMeRequest failed");
 					else if (res)
 						*res = kextMembers.AppleNVMeRequest.result.get(req);
 				}
@@ -314,7 +315,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 			kextFuncs.IONVMeController.ReturnRequest(entry.controller, req);
 		}
 	} else
-		SYSLOG("feature", "Failed to prepare buffer");
+		SYSLOG(Log::Feature, "Failed to prepare buffer");
 
 	if (desc && prepared)
 		desc->complete();
@@ -325,7 +326,7 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 bool NVMeFixPlugin::enableAPST(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl) {
 #ifdef DEBUG
 	if (APSTenabled(entry, entry.apste) == kIOReturnSuccess)
-		DBGLOG("apst", "APST status %d", entry.apste);
+		DBGLOG(Log::APST, "APST status %d", entry.apste);
 #endif
 
 	if (entry.apstAllowed()) {
@@ -337,14 +338,14 @@ bool NVMeFixPlugin::enableAPST(ControllerEntry& entry, const NVMe::nvme_id_ctrl*
 		} else /* Assume we turn APST on without double checking in RELEASE builds */
 			entry.apste = true;
 	} else
-		DBGLOG("apst", "Not configuring APST (it is already enabled or quirks prohibit it)");
+		DBGLOG(Log::APST, "Not configuring APST (it is already enabled or quirks prohibit it)");
 
 #ifdef DEBUG
 	if (APSTenabled(entry, entry.apste) == kIOReturnSuccess) {
-		DBGLOG("apst", "APST status %d", entry.apste);
+		DBGLOG(Log::APST, "APST status %d", entry.apste);
 	}
 	if (entry.apste && dumpAPST(entry, ctrl->npss))
-		DBGLOG("apst", "Failed to dump APST table");
+		DBGLOG(Log::APST, "Failed to dump APST table");
 #endif
 
 	entry.controller->setProperty("apst", entry.apste);
@@ -357,11 +358,11 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 	assert(entry.controller);
 
 	if (!ctrl->apsta) {
-		SYSLOG("apst", "APST unsupported by this controller");
+		SYSLOG(Log::APST, "APST unsupported by this controller");
 		return kIOReturnUnsupported;
 	}
 	if (ctrl->npss > 31) {
-		SYSLOG("apst", "Invalid NPSS");
+		SYSLOG(Log::APST, "Invalid NPSS");
 		return kIOReturnUnsupported;
 	}
 
@@ -370,7 +371,7 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 														   kIODirectionOut);
 
 	if (!apstDesc) {
-		SYSLOG("apst", "Failed to create APST table descriptor");
+		SYSLOG(Log::APST, "Failed to create APST table descriptor");
 		return kIOReturnNoResources;
 	}
 
@@ -392,7 +393,7 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 		for (int state = ctrl->npss; state >= 0; state--) {
 			if (target) {
 				apstTable->entries[state] = target;
-				DBGLOG("apst", "Set entry %d to 0x%llx", state, target);
+				DBGLOG(Log::APST, "Set entry %d to 0x%llx", state, target);
 			}
 
 			/*
@@ -433,12 +434,12 @@ IOReturn NVMeFixPlugin::configureAPST(ControllerEntry& entry, const NVMe::nvme_i
 		}
 
 		if (max_ps == -1)
-			DBGLOG("apst", "No non-operational states are available");
+			DBGLOG(Log::APST, "No non-operational states are available");
 		else
-			DBGLOG("apst", "APST enabled: max PS = %d, max round-trip latency = %lluus\n",
+			DBGLOG(Log::APST, "APST enabled: max PS = %d, max round-trip latency = %lluus\n",
 				max_ps, max_lat_us);
 	} else
-		SYSLOG("apst", "Failed to get table buffer");
+		SYSLOG(Log::APST, "Failed to get table buffer");
 
 	if (max_ps != -1) {
 		uint32_t dword11 {1};
@@ -455,7 +456,7 @@ IOReturn NVMeFixPlugin::APSTenabled(ControllerEntry& entry, bool& enabled) {
 	auto ret = NVMeFeatures(entry, NVMe::NVME_FEAT_AUTO_PST, nullptr, nullptr, &res, false);
 
 	if (ret != kIOReturnSuccess)
-		DBGLOG("apst", "Failed to get features");
+		DBGLOG(Log::APST, "Failed to get features");
 	else
 		enabled = res;
 	return ret;
@@ -468,7 +469,7 @@ IOReturn NVMeFixPlugin::dumpAPST(ControllerEntry& entry, int npss) {
 	auto apstDesc = IOBufferMemoryDescriptor::withCapacity(sizeof(NVMe::nvme_feat_auto_pst),
 														   kIODirectionIn);
 	if (!apstDesc) {
-		SYSLOG("apst", "Failed to create APST table descriptor");
+		SYSLOG(Log::APST, "Failed to create APST table descriptor");
 		return kIOReturnNoResources;
 	}
 
@@ -477,12 +478,12 @@ IOReturn NVMeFixPlugin::dumpAPST(ControllerEntry& entry, int npss) {
 
 	if (NVMeFeatures(entry, NVMe::NVME_FEAT_AUTO_PST, nullptr, apstDesc, nullptr, false) !=
 		kIOReturnSuccess) {
-		DBGLOG("apst", "Failed to get features");
+		DBGLOG(Log::APST, "Failed to get features");
 		goto fail;
 	}
 
 	for (int state = npss; state >= 0; state--)
-		DBGLOG("apst", "entry %d : 0x%llx", state, apstTable->entries[state]);
+		DBGLOG(Log::APST, "entry %d : 0x%llx", state, apstTable->entries[state]);
 
 fail:
 	if (apstDesc)
@@ -519,7 +520,7 @@ void NVMeFixPlugin::init() {
 	LiluAPI::Error err;
 
 	if (!(lck = IOLockAlloc())) {
-		SYSLOG("nvmef", "Failed to alloc lock");
+		SYSLOG(Log::Plugin, "Failed to alloc lock");
 		goto fail;
 	}
 
@@ -530,7 +531,7 @@ void NVMeFixPlugin::init() {
 							matchingNotificationHandler,
 						    this);
 	if (!matchingNotifier) {
-		SYSLOG("nvmef", "Failed to register for matching notification");
+		SYSLOG(Log::Plugin, "Failed to register for matching notification");
 		goto fail;
 	}
 
@@ -539,15 +540,15 @@ void NVMeFixPlugin::init() {
 							terminatedNotificationHandler,
 						    this);
 	if (!terminationNotifier) {
-		SYSLOG("nvmef", "Failed to register for termination notification");
+		SYSLOG(Log::Plugin, "Failed to register for termination notification");
 		goto fail;
 	}
 
-	DBGLOG("nvmef", "Registered for matching notifications");
+	DBGLOG(Log::Plugin, "Registered for matching notifications");
 
 	err = lilu.onKextLoad(&kextInfo, 1, NVMeFixPlugin::processKext, this);
 	if (err != LiluAPI::Error::NoError) {
-		SYSLOG("nvmef", "Failed to register kext load cb");
+		SYSLOG(Log::Plugin, "Failed to register kext load cb");
 		goto fail;
 	}
 

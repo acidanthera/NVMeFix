@@ -64,6 +64,7 @@
 		2F77375C23AE401900C87C16 /* kern_util.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_util.hpp; sourceTree = "<group>"; };
 		2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NVMeFixPlugin.hpp; sourceTree = "<group>"; };
 		2FAEE25A23AE266E00185076 /* NVMeFix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NVMeFix.cpp; sourceTree = "<group>"; };
+		2FF27FCB23C8B53C00BE79E3 /* Log.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Log.hpp; sourceTree = "<group>"; };
 		2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVMeFix.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FF3E71423AE1DA100D8CDEB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -191,6 +192,7 @@
 			isa = PBXGroup;
 			children = (
 				2F77376223AF98AF00C87C16 /* NVMeFixPlugin.hpp */,
+				2FF27FCB23C8B53C00BE79E3 /* Log.hpp */,
 				2FAEE25A23AE266E00185076 /* NVMeFix.cpp */,
 				2F1E834F23B6248D0048B956 /* nvme_quirks.cpp */,
 				2F1E835023B6248D0048B956 /* nvme_quirks.hpp */,

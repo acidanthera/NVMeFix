@@ -12,6 +12,7 @@
 // THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
 // WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
+#include "Log.hpp"
 #include "nvme_quirks.hpp"
 
 #include <IOKit/IORegistryEntry.h>
@@ -141,11 +142,11 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		if (ret && ret->getLength() > 0 && ret->getBytesNoCopy()) {
 			lilu_os_memcpy(res, ret->getBytesNoCopy(), ret->getLength());
 			res[min(sizeof(res), ret->getLength()) - 1] = '\0';
-			DBGLOG("quirks", "Found %s = %s", name, res);
+			DBGLOG(Log::Quirks, "Found %s = %s", name, res);
 
 			return true;
 		} else {
-			DBGLOG("quirks", "Failed to find IODeviceTree:/efi/platform %s", name);
+			DBGLOG(Log::Quirks, "Failed to find IODeviceTree:/efi/platform %s", name);
 			return false;
 		}
 	};
@@ -195,12 +196,12 @@ nvme_quirks quirksForController(IOService* controller) {
 
 	auto parent = controller->getParentEntry(gIOServicePlane);
 	if (!parent || !parent->metaCast("IOPCIDevice")) {
-		DBGLOG("quirks", "Controller parent is not an IOPCIDevice");
+		DBGLOG(Log::Quirks, "Controller parent is not an IOPCIDevice");
 		return NVME_QUIRK_NONE;
 	}
 
 	if (!vendor || !device) {
-		DBGLOG("quirks", "Failed to get vendor or device id");
+		DBGLOG(Log::Quirks, "Failed to get vendor or device id");
 		return NVME_QUIRK_NONE;
 	}
 
