@@ -157,7 +157,7 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		foundBoard = getStrProp(platform, "OEMBoard", boardName);
 	}
 
-	if (vendor == 0x144d && device == 0xa802 && foundProduct && foundVendor && foundBoard) {
+	if (vendor == 0x144d && device == 0xa802 && foundProduct && foundVendor) {
 		/*
 		 * Several Samsung devices seem to drop off the PCIe bus
 		 * randomly when APST is on and uses the deepest sleep state.
@@ -169,7 +169,7 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		if (!strcmp("Dell Inc.", vendorName) && (!strcmp(productName, "XPS 15 9550") ||
 												 !strcmp(productName, "Precision 5510")))
 			ret |= NVME_QUIRK_NO_DEEPEST_PS;
-	} else if (vendor == 0x144d && device == 0xa804) {
+	} else if (vendor == 0x144d && device == 0xa804 && foundVendor && foundBoard) {
 		/*
 		 * Samsung SSD 960 EVO drops off the PCIe bus after system
 		 * suspend on a Ryzen board, ASUS PRIME B350M-A, as well as
