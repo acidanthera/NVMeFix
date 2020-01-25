@@ -154,6 +154,7 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		}
 	};
 	
+	/* Strings in NVRAM are not NUL-terminated */
 	auto getEFIProp = [](auto& ser, auto name, auto& res) {
 		uint32_t attr;
 		uint64_t szRead {sizeof(res)};
@@ -161,7 +162,7 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		if (status != EFI_SUCCESS)
 			DBGLOG(Log::Quirks, "Failed to find LiluVendorGuid:%s", name);
 		else {
-			res[min(sizeof(res), szRead) - 1] = '\0';
+			res[min(sizeof(res) - 1, szRead)] = '\0';
 			DBGLOG(Log::Quirks, "Found LiluVendorGuid:%s = %s", name, res);
 		}
 		
@@ -177,7 +178,7 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		} else {
 			auto sz = min(szRead, sizeof(res));
 			lilu_os_memcpy(res, data, sz);
-			res[sz - 1] = '\0';
+			res[min(szRead, sizeof(res) - 1)] = '\0';
 			Buffer::deleter(data);
 			DBGLOG(Log::Quirks, "Found LiluVendorGuid:%s = %s", name, res);
 			return true;
