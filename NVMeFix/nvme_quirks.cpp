@@ -18,6 +18,7 @@
 #include <IOKit/IORegistryEntry.h>
 #include <IOKit/IODeviceTreeSupport.h>
 #include <kern/assert.h>
+#include <Headers/kern_efi.hpp>
 #include <Headers/kern_iokit.hpp>
 #include <Headers/kern_util.hpp>
 
@@ -150,11 +151,34 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 			return false;
 		}
 	};
+	
+	auto getEFIProp = [](auto& ser, auto name, auto& res) {
+		uint32_t attr;
+		uint64_t szRead {sizeof(res)};
+		auto status = ser->getVariable(name, &EfiRuntimeServices::LiluVendorGuid, &attr, &szRead, res);
+		if (status != EFI_SUCCESS)
+			DBGLOG(Log::Quirks, "Failed to find LiluVendorGuid:%s", name);
+		else {
+			res[min(sizeof(res), szRead) - 1] = '\0';
+			DBGLOG(Log::Quirks, "Found LiluVendorGuid:%s = %s", name, res);
+		}
+		
+		return status == EFI_SUCCESS;
+	};
 
 	if (platform) {
 		foundProduct = getStrProp(platform, "OEMProduct", productName);
 		foundVendor = getStrProp(platform, "OEMVendor", vendorName);
 		foundBoard = getStrProp(platform, "OEMBoard", boardName);
+	} if (!foundProduct || !foundVendor || !foundBoard) {
+		auto ser = EfiRuntimeServices::get();
+		if (!ser)
+			DBGLOG(Log::Quirks, "Failed to get EFI services");
+		else {
+			foundProduct = getEFIProp(ser, u"oem-product", productName);
+			foundVendor = getEFIProp(ser, u"oem-vendor", vendorName);
+			foundBoard = getEFIProp(ser, u"oem-board", boardName);
+		}
 	}
 
 	if (vendor == 0x144d && device == 0xa802 && foundProduct && foundVendor) {
