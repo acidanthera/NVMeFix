@@ -141,8 +141,9 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		auto ret = OSDynamicCast(OSData, platform->getProperty(name));
 	
 		if (ret && ret->getLength() > 0 && ret->getBytesNoCopy()) {
-			lilu_os_memcpy(res, ret->getBytesNoCopy(), ret->getLength());
-			res[min(sizeof(res), ret->getLength()) - 1] = '\0';
+			auto sz = min(ret->getLength(), sizeof(res));
+			lilu_os_memcpy(res, ret->getBytesNoCopy(), sz);
+			res[sz - 1] = '\0';
 			DBGLOG(Log::Quirks, "Found %s = %s", name, res);
 
 			return true;
