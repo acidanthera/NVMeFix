@@ -20,6 +20,7 @@
 #include <kern/assert.h>
 #include <Headers/kern_efi.hpp>
 #include <Headers/kern_iokit.hpp>
+#include <Headers/kern_nvram.hpp>
 #include <Headers/kern_util.hpp>
 
 /* SPDX-License-Identifier: GPL-2.0 */
@@ -166,19 +167,48 @@ static nvme_quirks check_vendor_combination_bug(uint32_t vendor, uint32_t device
 		
 		return status == EFI_SUCCESS;
 	};
+	
+	auto getNVRAMProp = [](auto& storage, auto name, auto& res) {
+		uint32_t szRead {sizeof(res)};
+		auto data = storage.read(name, szRead);
+		if (!data) {
+			DBGLOG(Log::Quirks, "Failed to find LiluVendorGuid:%s", name);
+			return false;
+		} else {
+			auto sz = min(szRead, sizeof(res));
+			lilu_os_memcpy(res, data, sz);
+			res[sz - 1] = '\0';
+			Buffer::deleter(data);
+			DBGLOG(Log::Quirks, "Found LiluVendorGuid:%s = %s", name, res);
+			return true;
+		}
+	};
 
 	if (platform) {
+		DBGLOG(Log::Quirks, "Reading OEM info from IODT");
+
 		foundProduct = getStrProp(platform, "OEMProduct", productName);
 		foundVendor = getStrProp(platform, "OEMVendor", vendorName);
 		foundBoard = getStrProp(platform, "OEMBoard", boardName);
 	} if (!foundProduct || !foundVendor || !foundBoard) {
-		auto ser = EfiRuntimeServices::get();
-		if (!ser)
-			DBGLOG(Log::Quirks, "Failed to get EFI services");
-		else {
-			foundProduct = getEFIProp(ser, u"oem-product", productName);
-			foundVendor = getEFIProp(ser, u"oem-vendor", vendorName);
-			foundBoard = getEFIProp(ser, u"oem-board", boardName);
+		DBGLOG(Log::Quirks, "Reading OEM info from NVRAM");
+
+		NVStorage storage;
+		if (storage.init()) {
+			foundProduct = getNVRAMProp(storage, "oem-product", productName);
+			foundVendor = getNVRAMProp(storage, "oem-vendor", vendorName);
+			foundBoard = getNVRAMProp(storage, "oem-board", boardName);
+
+			storage.deinit();
+		} else {
+			auto ser = EfiRuntimeServices::get();
+			if (!ser)
+				DBGLOG(Log::Quirks, "Failed to get EFI services");
+			else {
+				foundProduct = getEFIProp(ser, u"oem-product", productName);
+				foundVendor = getEFIProp(ser, u"oem-vendor", vendorName);
+				foundBoard = getEFIProp(ser, u"oem-board", boardName);
+			}
 		}
 	}
 
