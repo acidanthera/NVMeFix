@@ -435,7 +435,7 @@
 				MODULE_NAME = org.acidanthera.NVMeFix;
 				MODULE_START = NVMeFix_kern_start;
 				MODULE_STOP = NVMeFix_kern_stop;
-				MODULE_VERSION = 1.0.0;
+				MODULE_VERSION = 1.0.1;
 				OTHER_CFLAGS = (
 					"-mmmx",
 					"-msse",
@@ -487,7 +487,7 @@
 				MODULE_NAME = org.acidanthera.NVMeFix;
 				MODULE_START = NVMeFix_kern_start;
 				MODULE_STOP = NVMeFix_kern_stop;
-				MODULE_VERSION = 1.0.0;
+				MODULE_VERSION = 1.0.1;
 				OTHER_CFLAGS = (
 					"-mmmx",
 					"-msse",

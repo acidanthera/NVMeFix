@@ -35,8 +35,8 @@ Configuration
 `-nvmefoff` disables the kext.
 
 Some SSDs misbehave when APST is on. NVMeFix attempts to detect broken motherboard and SSD
-combinations and work around them. Motherboard is detected via `IODeviceTree:/efi/platform`
-`OEMProduct`, `OEMVendor` and `OEMBoard` keys injected by the bootloader.
+combinations and work around them. Motherboard is detected via IORegistry keys injected by Clover,
+or NVRAM variables provided by OpenCore.
 
 APST table entries specify minimum idle latency for the transition to occur. Maximum acceptable
 latency is 100000 microseconds, and may be overriden via little-endian 8-byte property
