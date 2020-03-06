@@ -71,3 +71,20 @@ used for APST depending on `ps-max-latency-us`.
      2 +     3.80W       -        -    2  2  2  2        0       0
      3 -   0.0450W       -        -    3  3  3  3     2000    2000
      4 -   0.0040W       -        -    4  4  4  4     6000    8000
+
+IONVMeFamily supports the following debug flag bitfield, which are passed either via `nvme` bootarg
+or `debug.NVMe` sysctl:
+
+    1: Log some events via kprintf
+    2: Detailed event trace via kernel_debug with 0x61500xx debugid
+    4: PRP-related event trace via kernel_debug with 0x61540xx debugid
+    8: Force disable LPSR for Apple controllers
+    16: Perform only PCI initialisation of NVMe controller
+    32: Ignore initialisation errors
+    128: Disable LPSR for Apple controllers
+    512: Disable Unmap feature for IONVMeBlockStorageDevice
+
+IONVMeFamily supports the following additional bootargs:
+
+    nand-io-timeoutms: Timeout for NVMe requests in ms, 35 s by default
+    enable-IO-log: Issue CORE_DEBUG_ENABLE_IOLOG ASP command (for Apple controllers)
