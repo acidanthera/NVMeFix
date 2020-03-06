@@ -136,6 +136,12 @@ private:
 				"__ZN16AppleNVMeRequest20GenerateIOVMSegmentsEyy"
 			};
 		} AppleNVMeRequest;
+		
+		struct {
+			Func<IOReturn,IOService*,void*,unsigned,unsigned> GetLogPage {
+				"__ZN24IONVMeBlockStorageDevice10GetLogPageEP18IOMemoryDescriptorjj"
+			};
+		} IONVMeBlockStorageDevice;
 	} kextFuncs;
 
 
@@ -255,6 +261,8 @@ private:
 	IOReturn NVMeFeatures(ControllerEntry&, unsigned fid, unsigned* dword11, IOBufferMemoryDescriptor* desc,
 							 uint32_t* res, bool set);
 	ControllerEntry* entryForController(IOService*) const;
+	static IOReturn GetLogPage(IOService*, void*, unsigned, unsigned);
+
 	struct PM {
 		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
 		bool solveSymbols(KernelPatcher&);
