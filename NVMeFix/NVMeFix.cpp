@@ -54,25 +54,6 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 	}
 }
 
-/**
- * AppleNVMeSMARTUserClient does not sanitise the argument to GetLogPage. As a result, Apple-specific
- * LID gets passed, which causes certain controllers to hang.
- **/
-IOReturn NVMeFixPlugin::GetLogPage(IOService* bsdev, void * desc, unsigned int lid, unsigned int numdl) {
-	auto parent = bsdev->getProvider();
-	if (parent && (parent->metaCast("AppleNVMeController") ||
-				   (1 <= lid && lid <= 0xf) || /* Error information to Endurance Group Event Aggregate */
-				   (0x80 <= lid && lid <= 0x81))) /* Command Set Specific */ {
-		DBGLOG(Log::Plugin, "Sending Get Log Page command with LID %u", lid);
-		return NVMeFixPlugin::globalPlugin().kextFuncs.IONVMeBlockStorageDevice.GetLogPage(bsdev, desc,
-																						   lid,
-																						   numdl);
-	}
-
-	DBGLOG(Log::Plugin, "Not sending Get Log Page command for unsupported LID %u", lid);
-	return kIOReturnUnsupported;
-}
-
 bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	auto idx = plugin.kextInfo.loadIndex;
 	bool res = true;
@@ -84,8 +65,7 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	kextFuncs.IONVMeController.ReturnRequest.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.GetStatus.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, idx) &&
-	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, idx) &&
-	kextFuncs.IONVMeBlockStorageDevice.GetLogPage.route(kp, idx, NVMeFixPlugin::GetLogPage);
+	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, idx);
 
 	/* mov eax, [rdi+0xA8] */
 	res &= kextMembers.AppleNVMeRequest.result.fromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
