@@ -231,11 +231,13 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	DBGLOG(Log::Plugin, "Identified model %s (vid 0x%x)", mn, ctrl->vid);
 #endif
 
-	if (!PM.init(entry, ctrl))
-		SYSLOG(Log::PM, "Failed to initialise power management");
-
 	if (!enableAPST(entry, ctrl))
 		SYSLOG(Log::APST, "Failed to enable APST");
+
+	/* Only enable NVM PM if APST is not enabled */
+	if (!entry.apste && !PM.init(entry, ctrl))
+		SYSLOG(Log::PM, "Failed to initialise power management");
+
 }
 
 IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescriptor*& desc) {

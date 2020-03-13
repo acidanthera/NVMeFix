@@ -54,7 +54,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 			op++;
 
 	if (op <= 1) {
-		SYSLOG(Log::PM, "Controller declares too few power states, using PCI PM");
+		SYSLOG(Log::PM, "Controller declares too few power states, using only PCI PM");
 		return false;
 	}
 
@@ -135,6 +135,8 @@ OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
 	DBGLOG(Log::PM, "setPowerState %lu", powerStateOrdinal);
+	
+	assert(!entry->apste);
 
 	if (powerStateOrdinal == 0)
 		return kIOPMAckImplied;
@@ -235,9 +237,11 @@ bool NVMeFixPlugin::PM::activityTickle(void* controller, unsigned long type, uns
 	IOLockLock(plugin.lck);
 	entry = plugin.entryForController(static_cast<IOService*>(controller));
 	IOLockUnlock(plugin.lck);
-
+	
+	/* If APST is enabled, we do not manage NVMe PM ourselves. */
+	/* We cannot avoid hooking activityTickle, however, as don't know if we have APST in advance */
 	if (entry && IOLockTryLock(entry->lck)) {
-		if (entry->powerStates && entry->pm) {
+		if (!entry->apste && entry->powerStates && entry->pm) {
 //			DBGLOG("pm", "activityTickle");
 			entry->pm->activityTickle(kIOPMSuperclassPolicy1, entry->nstates - 1);
 		}
