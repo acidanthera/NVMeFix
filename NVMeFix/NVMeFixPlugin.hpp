@@ -113,6 +113,9 @@ private:
 				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"
 			};
 			Func<bool,void*,unsigned long, unsigned long> activityTickle {};
+			Func<void,void*,void*,int> FilterInterruptRequest {
+				"__ZN16IONVMeController22FilterInterruptRequestEP28IOFilterInterruptEventSource"
+			};
 		} IONVMeController;
 
 		struct {
@@ -185,7 +188,7 @@ private:
 		};
 
 		struct {
-			Member<uint32_t> fProposedPowerState;
+			Member<uint8_t> ANS2MSIWorkaround;
 		} IONVMeController;
 
 		struct {

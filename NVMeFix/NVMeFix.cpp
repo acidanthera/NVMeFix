@@ -65,7 +65,8 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	kextFuncs.IONVMeController.ReturnRequest.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.GetStatus.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.GetOpcode.solve(kp, idx) &&
-	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, idx);
+	kextFuncs.AppleNVMeRequest.GenerateIOVMSegments.solve(kp, idx) &&
+	kextFuncs.IONVMeController.FilterInterruptRequest.solve(kp, idx);
 
 	/* mov eax, [rdi+0xA8] */
 	res &= kextMembers.AppleNVMeRequest.result.fromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
@@ -75,9 +76,13 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 												  0xf, 0, 7) &
 	/* mov [rbx+0xC0], r12 */
 		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr,
-														0x89, 4, 3);
+														0x89, 4, 3) &&
+	/* cmp byte ptr [rdi+269h], 0 */
+		kextMembers.IONVMeController.ANS2MSIWorkaround.fromFunc(kextFuncs.IONVMeController.FilterInterruptRequest.fptr,
+																0x80, 7, 7, 0, 32);
 	if (res)
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
+
 	res &= PM.solveSymbols(kp);
 	if (!res)
 		DBGLOG(Log::Plugin, "Failed to solve symbols");
@@ -171,6 +176,26 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		SYSLOG(Log::Plugin, "Ignoring Apple controller");
 		return;
 	}
+	
+	/**
+	 * Force enable ANS2MSIWorkaround.
+	 *
+	 * We would often get a panic with I/O Read command timeout on VMware and Samsung PM981.
+	 * Some investigation showed that CQ head entry phase and CQ phase would mismatch.
+	 * This implies there is a race such that CQ head gets updated to point to an entry with inverted
+	 * phase.
+	 * Since FilterIRQ detects phase mismatch, it does not schedule HandleIRQ at the workloop of NVMe
+	 * controller, so a request is never handled and we get a timeout. If Filter and Handle IRQ calls can
+	 * possibly race, this may happen because HandleIRQ does not manage to update CQ phase in time before
+	 * FilterIRQ phase check is scheduled, observing the old phase. This is the case in situation where
+	 * two FilterIRQ calls happen with no HandleIRQ in between where the controller was too slow to
+	 * notice INTMS being set.
+	 * Normally, IRQ is masked just before HandleIRQ is scheduled in FilterIRQ, and unmasked when
+	 * HandleIRQ is done. IONVMeController::ANS2MSIWorkaround forces IRQ to be masked at the very
+	 * start of FilterIRQ instead so that FilterIRQ does not race with itself. This seems to eliminate
+	 * the timeouts.
+	 **/
+	kextMembers.IONVMeController.ANS2MSIWorkaround.get(entry.controller) = 1;
 
 	/* First get quirks based on PCI device */
 	entry.quirks = NVMe::quirksForController(entry.controller);
