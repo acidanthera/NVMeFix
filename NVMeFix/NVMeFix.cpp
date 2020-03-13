@@ -105,7 +105,7 @@ bool NVMeFixPlugin::matchingNotificationHandler(void* that, void* , IOService* s
 
 	IOLockLock(plugin->lck);
 
-//	DBGLOG("nvmef", "matchingNotificationHandler for %s", service->getName());
+	DBGLOG("nvmef", "matchingNotificationHandler for %s", service->getName());
 
 	auto parent = service->getProvider();
 

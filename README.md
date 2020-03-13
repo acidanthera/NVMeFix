@@ -47,8 +47,6 @@ will be disabled completely.
 Diagnostics
 -----------
 
-Note: IOKit message `Couldn't alloc class "NVMeFix"` is not an error.
-
 `RELEASE` build will only log high-level information about failures.
 
 `DEBUG` build will additionally log used power states, detailed error messages, and attempt to
