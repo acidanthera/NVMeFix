@@ -11,6 +11,7 @@ The following features are implemented:
 
 - Autonomous Power State Transition to reduce idle power consumption of the controller.
 - Host-driver active power state management.
+- Workaround for timeout panics on certain controllers (VMware, Sumsung PM981).
 
 Other incompatibilities with third-party SSDs may be addressed provided enough information is
 submitted to the bugtracker.
