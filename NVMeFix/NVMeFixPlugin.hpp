@@ -168,7 +168,7 @@ private:
 					return true;
 
 				if (!start) {
-					DBGLOG(Log::Plugin, "No start specified for %s", name);
+					DBGLOG(Log::Disasm, "No start specified for %s", name);
 					return false;
 				}
 				hde64s dis;
@@ -191,7 +191,7 @@ private:
 					start += sz;
 				}
 				
-				DBGLOG(Log::Plugin, "Failed to find %s", name);
+				DBGLOG(Log::Disasm, "Failed to find %s", name);
 				return false;
 			};
 		};
