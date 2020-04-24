@@ -21,7 +21,8 @@ static constexpr auto Plugin {"nvmef"},
 					 APST {"apst"},
 					 PM {"pm"},
 					 Quirks {"quirks"},
-					 Feature {"feature"};
+					 Feature {"feature"},
+					 Disasm {"disasm"};
 };
 
 #endif /* Log_h */

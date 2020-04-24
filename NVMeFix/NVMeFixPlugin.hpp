@@ -26,6 +26,7 @@
 #include <Headers/kern_patcher.hpp>
 #include <Headers/kern_util.hpp>
 
+#include "Log.hpp"
 #include "nvme.h"
 #include "nvme_quirks.hpp"
 
@@ -140,17 +141,19 @@ private:
 			};
 		} AppleNVMeRequest;
 	} kextFuncs;
-
-
-	/**
-	 * Controller writes operation result to a member of AppleNVMeRequest which
-	 * is then directly accessed by client code. Unlike the other request members,
-	 * there is no wrapper, but it always seem to follow uint32_t status member in request
-	 * struct, so we rely on that.
-	 */
+	
 	struct {
 		template <typename T>
 		struct Member {
+#ifdef DEBUG
+#define NAMED_MEMBER(n) n {.name = #n}
+#else
+#define NAMED_MEMBER(n) n
+#endif
+
+#ifdef DEBUG
+			const char* const name {};
+#endif
 			mach_vm_address_t offs {};
 			T& get(void* obj) {
 				assert(offs);
@@ -164,39 +167,46 @@ private:
 				if (offs)
 					return true;
 
-				if (!start)
+				if (!start) {
+					DBGLOG(Log::Plugin, "No start specified for %s", name);
 					return false;
+				}
 				hde64s dis;
 
 				for (size_t i = 0; i < ninsts_max; i++) {
 					auto sz = Disassembler::hdeDisasm(start, &dis);
 
-					if (dis.flags & F_ERROR)
+					if (dis.flags & F_ERROR) {
+						DBGLOG(Log::Disasm, "Error disassembling %s", name);
 						break;
+					}
 
 					/* mov reg, [reg+disp] */
 					if (dis.opcode == opcode && dis.modrm_reg == reg && dis.modrm_rm == rm) {
 						offs = dis.disp.disp32 + add;
+						DBGLOG(Log::Disasm, "Offset 0x%x for %s", offs, name);
 						return true;
 					}
 
 					start += sz;
 				}
-
+				
+				DBGLOG(Log::Plugin, "Failed to find %s", name);
 				return false;
 			};
 		};
 
 		struct {
-			Member<uint8_t> ANS2MSIWorkaround;
+			Member<uint8_t> NAMED_MEMBER(ANS2MSIWorkaround);
 		} IONVMeController;
 
 		struct {
-			Member<uint32_t> result;
-			Member<void*> controller;
-			Member<NVMe::nvme_command> command;
-			Member<IOBufferMemoryDescriptor*> prpDescriptor;
+			Member<uint32_t> NAMED_MEMBER(result);
+			Member<void*> NAMED_MEMBER(controller);
+			Member<NVMe::nvme_command> NAMED_MEMBER(command);
+			Member<IOBufferMemoryDescriptor*> NAMED_MEMBER(prpDescriptor);
 		} AppleNVMeRequest;
+#undef NAMED_MEMBER
 	} kextMembers;
 
 	/*
