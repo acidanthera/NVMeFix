@@ -10,7 +10,7 @@ matrix:
     script:
       - src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/bootstrap.sh) && eval "$src" || exit 1
       - xcodebuild -configuration Debug
-      - xcodebuild -configuration Release
+      - xcodebuild -jobs 1 -configuration Release
 
     deploy:
       provider: releases
