@@ -34,7 +34,7 @@
 * As we never transition to idle states, we need not freeze the command queue, so we don't have to
 * touch the internal state of IONVMe.
 */
-bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl) {
+bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl, bool apst) {
 	unsigned op {};
 
 	entry.pm = new NVMePMProxy();
@@ -48,15 +48,17 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		DBGLOG(Log::PM, "Registering power change interest");
 		entry.controller->registerInterestedDriver(entry.pm);
 	}
+		
+	/* For APST just post the dummy PS */
+	if (!apst) {
+		for (int state = ctrl->npss; state >= 0; state--)
+			if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
+				op++;
+	} else
+		op = 0;
 
-	for (int state = ctrl->npss; state >= 0; state--)
-		if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
-			op++;
-
-	if (op <= 1) {
-		SYSLOG(Log::PM, "Controller declares too few power states, using only PCI PM");
-		return false;
-	}
+	if (!apst && op <= 1)
+		SYSLOG(Log::PM, "Controller declares too few operational power states");
 
 	DBGLOG(Log::PM, "npss 0x%x", ctrl->npss);
 
@@ -117,9 +119,11 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		SYSLOG(Log::PM, "makeUsable failed with 0x%x", status);
 		goto fail;
 	}
-
-	entry.pm->changePowerStateTo(1); /* Clamp lowest PS at 1 */
-	entry.pm->setIdleTimerPeriod(idlePeriod);
+	
+	if (!apst) {
+		entry.pm->changePowerStateTo(1); /* Clamp lowest PS at 1 */
+		entry.pm->setIdleTimerPeriod(idlePeriod);
+	}
 
 	return true;
 fail:
@@ -135,8 +139,6 @@ OSDefineMetaClassAndStructors(NVMePMProxy, IOService);
 
 IOReturn NVMePMProxy::setPowerState(unsigned long powerStateOrdinal, IOService *whatDevice) {
 	DBGLOG(Log::PM, "setPowerState %lu", powerStateOrdinal);
-	
-	assert(!entry->apste);
 
 	if (powerStateOrdinal == 0)
 		return kIOPMAckImplied;
@@ -193,7 +195,8 @@ IOReturn NVMePMProxy::powerStateDidChangeTo(IOPMPowerFlags capabilities, unsigne
 	NVMe::nvme_id_ctrl* identify {};
 
 	if (entry->controller != whatDevice) {
-		DBGLOG(Log::PM, "Power state change for irrelevant device %s", whatDevice->getMetaClass()->getClassName());
+		DBGLOG(Log::PM, "Power state change for irrelevant device %s",
+			   whatDevice->getMetaClass()->getClassName());
 		goto done;
 	}
 

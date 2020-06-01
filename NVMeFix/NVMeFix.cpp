@@ -234,10 +234,8 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	if (!enableAPST(entry, ctrl))
 		SYSLOG(Log::APST, "Failed to enable APST");
 
-	/* Only enable NVM PM if APST is not enabled */
-	if (!entry.apste && !PM.init(entry, ctrl))
+	if (!PM.init(entry, ctrl, entry.apste))
 		SYSLOG(Log::PM, "Failed to initialise power management");
-
 }
 
 IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescriptor*& desc) {

@@ -269,7 +269,7 @@ private:
 							 uint32_t* res, bool set);
 	ControllerEntry* entryForController(IOService*) const;
 	struct PM {
-		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*);
+		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*,bool apst);
 		bool solveSymbols(KernelPatcher&);
 
 		static constexpr unsigned idlePeriod {2}; /* seconds */
