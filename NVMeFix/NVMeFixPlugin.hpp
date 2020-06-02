@@ -269,6 +269,11 @@ private:
 							 uint32_t* res, bool set);
 	ControllerEntry* entryForController(IOService*) const;
 	struct PM {
+		/**
+		 * If `apst`, initialises and enables NVMePMProxy to handle controller power state change
+		 * events in order to re-enable APST after reset.
+		 * If `!apst`, active NVMe PM is configured.
+		 */
 		bool init(ControllerEntry&,const NVMe::nvme_id_ctrl*,bool apst);
 		bool solveSymbols(KernelPatcher&);
 
@@ -279,16 +284,20 @@ private:
 		explicit PM(NVMeFixPlugin& plugin) : plugin(plugin) {}
 	private:
 		NVMeFixPlugin& plugin;
+		
+		bool initActivePM(ControllerEntry&, const NVMe::nvme_id_ctrl*);
 	} PM;
 };
 
 class NVMePMProxy : public IOService {
 	OSDeclareDefaultStructors(NVMePMProxy)
 public:
+	// NVMe power management
 	virtual IOReturn setPowerState(
 		unsigned long powerStateOrdinal,
 		IOService *   whatDevice ) override;
-
+	
+	// Monitoring IONVMeController power state to re-enable APST
 	virtual IOReturn powerStateDidChangeTo(
 		IOPMPowerFlags  capabilities,
 		unsigned long   stateNumber,

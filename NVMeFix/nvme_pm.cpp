@@ -35,8 +35,6 @@
 * touch the internal state of IONVMe.
 */
 bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl, bool apst) {
-	unsigned op {};
-
 	entry.pm = new NVMePMProxy();
 	if (entry.pm && !entry.pm->init()) {
 		DBGLOG(Log::PM, "Failed to init IOService");
@@ -44,25 +42,32 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	}
 	static_cast<NVMePMProxy*>(entry.pm)->entry = &entry;
 
-	if (entry.apstAllowed()) {
+	// If we did not manage to enable APST, assume we can't reenable it next
+	if (apst) {
 		DBGLOG(Log::PM, "Registering power change interest");
 		entry.controller->registerInterestedDriver(entry.pm);
+		entry.nstates = 0;
+		entry.powerStates = nullptr;
 	}
-		
-	/* For APST just post the dummy PS */
-	if (!apst) {
-		for (int state = ctrl->npss; state >= 0; state--)
-			if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
-				op++;
-	} else
-		op = 0;
 
-	if (!apst && op <= 1)
-		SYSLOG(Log::PM, "Controller declares too few operational power states");
+	entry.pm->PMinit();
+	auto root = IOService::getPMRootDomain();
+	if (root)
+		reinterpret_cast<IOService*>(root)->joinPMtree(entry.pm);
+	assert(root);
+	
+	if (!apst)
+		return initActivePM(entry, ctrl);
+	
+	return true;
+}
 
-	DBGLOG(Log::PM, "npss 0x%x", ctrl->npss);
-
-	entry.nstates = 1 /* off */ + op;
+bool NVMeFixPlugin::PM::initActivePM(ControllerEntry& entry, const NVMe::nvme_id_ctrl* ctrl) {
+	unsigned op {};
+	
+	for (int state = ctrl->npss; state >= 0; state--)
+		if (!(ctrl->psd[state].flags & NVMe::NVME_PS_FLAGS_NON_OP_STATE))
+			op++;
 
 	entry.powerStates = new IOPMPowerState[entry.nstates];
 	if (!entry.powerStates) {
@@ -70,6 +75,10 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		return false;
 	}
 
+	if (op <= 1)
+		SYSLOG(Log::PM, "Controller declares too few operational power states");
+	DBGLOG(Log::PM, "npss 0x%x", ctrl->npss);
+	
 	entry.powerStates[0] = {kIOPMPowerStateVersion1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 	/**
@@ -101,13 +110,7 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 	}
 
 	DBGLOG(Log::PM, "Publishing %u states", entry.nstates);
-
-	entry.pm->PMinit();
-	auto root = IOService::getPMRootDomain();
-	if (root)
-		reinterpret_cast<IOService*>(root)->joinPMtree(entry.pm);
-	assert(root);
-
+	
 	auto status = entry.pm->registerPowerDriver(entry.pm, entry.powerStates, entry.nstates);
 	if (status != kIOReturnSuccess) {
 		SYSLOG(Log::PM, "registerPowerDriver failed with 0x%x", status);
@@ -119,11 +122,9 @@ bool NVMeFixPlugin::PM::init(ControllerEntry& entry, const NVMe::nvme_id_ctrl* c
 		SYSLOG(Log::PM, "makeUsable failed with 0x%x", status);
 		goto fail;
 	}
-	
-	if (!apst) {
-		entry.pm->changePowerStateTo(1); /* Clamp lowest PS at 1 */
-		entry.pm->setIdleTimerPeriod(idlePeriod);
-	}
+
+	entry.pm->changePowerStateTo(1); /* Clamp lowest PS at 1 */
+	entry.pm->setIdleTimerPeriod(idlePeriod);
 
 	return true;
 fail:
