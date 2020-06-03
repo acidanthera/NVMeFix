@@ -1,5 +1,9 @@
 NVMeFix Changelog
 =================
+#### v1.0.3
+
+- Fix re-enabling APST after sleep (1.0.2 regression)
+
 #### v1.0.2
 
 - Prevent timeout panic on certain controllers (VMware, Samsung PM981)
