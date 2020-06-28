@@ -443,7 +443,7 @@ PluginConfiguration ADDPR(config) {
 	nullptr,
 	0,
 	KernelVersion::Mojave,
-	KernelVersion::Catalina,
+	KernelVersion::BigSur,
 	[]() {
 		NVMeFixPlugin::globalPlugin().init();
 	}
