@@ -233,7 +233,7 @@
 		2FF3E70623AE1DA100D8CDEB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = acidanthera;
 				TargetAttributes = {
 					2FF3E70E23AE1DA100D8CDEB = {
@@ -446,6 +446,9 @@
 					"-fno-non-call-exceptions",
 					"-fno-builtin",
 					"-fno-asynchronous-unwind-tables",
+					"-Wno-unknown-warning-option",
+ 					"-Wno-ossharedptr-misuse",
+ 					"-Wno-vla",
 				);
 				OTHER_LDFLAGS = "-static";
 				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
@@ -497,6 +500,9 @@
 					"-fno-non-call-exceptions",
 					"-fno-builtin",
 					"-fno-asynchronous-unwind-tables",
+					"-Wno-unknown-warning-option",
+ 					"-Wno-ossharedptr-misuse",
+ 					"-Wno-vla",
 				);
 				OTHER_LDFLAGS = "-static";
 				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
