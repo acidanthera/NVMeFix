@@ -2,7 +2,7 @@ NVMeFix Changelog
 =================
 #### v1.0.3
 - Fix re-enabling APST after sleep (1.0.2 regression)
-- Added constants for 11.0 support
+- Added constants for 11.0 support (no full compatibility provided)
 
 #### v1.0.2
 - Prevent timeout panic on certain controllers (VMware, Samsung PM981)
