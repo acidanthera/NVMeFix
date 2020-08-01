@@ -300,6 +300,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++1y";
@@ -355,6 +356,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++1y";
@@ -447,8 +449,8 @@
 					"-fno-builtin",
 					"-fno-asynchronous-unwind-tables",
 					"-Wno-unknown-warning-option",
- 					"-Wno-ossharedptr-misuse",
- 					"-Wno-vla",
+					"-Wno-ossharedptr-misuse",
+					"-Wno-vla",
 				);
 				OTHER_LDFLAGS = "-static";
 				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
@@ -501,8 +503,8 @@
 					"-fno-builtin",
 					"-fno-asynchronous-unwind-tables",
 					"-Wno-unknown-warning-option",
- 					"-Wno-ossharedptr-misuse",
- 					"-Wno-vla",
+					"-Wno-ossharedptr-misuse",
+					"-Wno-vla",
 				);
 				OTHER_LDFLAGS = "-static";
 				PRODUCT_BUNDLE_IDENTIFIER = org.acidanthera.NVMeFix;
