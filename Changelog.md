@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.4
+- Added MacKernelSDK with Xcode 12 compatibility
+
 #### v1.0.3
 - Fix re-enabling APST after sleep (1.0.2 regression)
 - Added constants for 11.0 support (no full compatibility provided)

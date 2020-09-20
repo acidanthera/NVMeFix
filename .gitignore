@@ -6,3 +6,4 @@ project.xcworkspace
 build
 .svace-dir
 cov-int
+/MacKernelSDK

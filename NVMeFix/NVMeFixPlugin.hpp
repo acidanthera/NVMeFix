@@ -19,7 +19,7 @@
 #include <stdatomic.h>
 #include <stdint.h>
 
-#include <Library/LegacyIOService.h>
+#include <IOKit/IOService.h>
 #include <IOKit/IOLocks.h>
 #include <IOKit/IOBufferMemoryDescriptor.h>
 #include <IOKit/pwr_mgt/IOPMpowerState.h>

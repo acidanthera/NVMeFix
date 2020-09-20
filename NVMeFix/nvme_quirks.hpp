@@ -16,7 +16,7 @@
 #ifndef nvme_quirks_hpp
 #define nvme_quirks_hpp
 
-#include <Library/LegacyIOService.h>
+#include <IOKit/IOService.h>
 #include <Headers/kern_iokit.hpp>
 #include <Headers/kern_util.hpp>
 

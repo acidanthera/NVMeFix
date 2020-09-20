@@ -11,8 +11,8 @@
 		2F2BAA3523B7A00500F7DF53 /* nvme_pm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F2BAA3323B7A00500F7DF53 /* nvme_pm.cpp */; };
 		2F7736C723AE2BF900C87C16 /* NVMeFix.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FAEE25A23AE266E00185076 /* NVMeFix.cpp */; };
 		2F77375D23AE404D00C87C16 /* plugin_start.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2F77373A23AE401900C87C16 /* plugin_start.cpp */; };
-		2F77376023AE406400C87C16 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F77372F23AE401900C87C16 /* libkmod.a */; };
 		2FF27FCD23C8B73A00BE79E3 /* nvme_apst.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2FF27FCC23C8B73A00BE79E3 /* nvme_apst.cpp */; };
+		CE8DA0E12517E36C008C44E8 /* libkmod.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE8DA0E02517E36C008C44E8 /* libkmod.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,19 +21,12 @@
 		2F1E835223B624C10048B956 /* linux_types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = linux_types.h; sourceTree = "<group>"; };
 		2F2BAA3323B7A00500F7DF53 /* nvme_pm.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_pm.cpp; sourceTree = "<group>"; };
 		2F7736C823AE333800C87C16 /* nvme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nvme.h; sourceTree = "<group>"; };
-		2F77372F23AE401900C87C16 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libkmod.a; sourceTree = "<group>"; };
 		2F77373123AE401900C87C16 /* entry64.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry64.S; sourceTree = "<group>"; };
 		2F77373223AE401900C87C16 /* build.tool */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = build.tool; sourceTree = "<group>"; };
 		2F77373323AE401900C87C16 /* entry32.S */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.asm; path = entry32.S; sourceTree = "<group>"; };
 		2F77373423AE401900C87C16 /* wrappers.inc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.pascal; path = wrappers.inc; sourceTree = "<group>"; };
-		2F77373623AE401900C87C16 /* mac_framework.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mac_framework.h; sourceTree = "<group>"; };
-		2F77373723AE401900C87C16 /* mac_policy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mac_policy.h; sourceTree = "<group>"; };
-		2F77373823AE401900C87C16 /* _label.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = _label.h; sourceTree = "<group>"; };
-		2F77373923AE401900C87C16 /* LegacyLibkernMacros.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyLibkernMacros.h; sourceTree = "<group>"; };
 		2F77373A23AE401900C87C16 /* plugin_start.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = plugin_start.cpp; sourceTree = "<group>"; };
-		2F77373B23AE401900C87C16 /* LegacyIOService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyIOService.h; sourceTree = "<group>"; };
 		2F77373D23AE401900C87C16 /* kern_config.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_config.hpp; sourceTree = "<group>"; };
-		2F77373E23AE401900C87C16 /* kern_atomic.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_atomic.hpp; sourceTree = "<group>"; };
 		2F77373F23AE401900C87C16 /* kern_time.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_time.hpp; sourceTree = "<group>"; };
 		2F77374023AE401900C87C16 /* kern_nvram.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_nvram.hpp; sourceTree = "<group>"; };
 		2F77374123AE401900C87C16 /* kern_cpu.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = kern_cpu.hpp; sourceTree = "<group>"; };
@@ -69,6 +62,7 @@
 		2FF27FCC23C8B73A00BE79E3 /* nvme_apst.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_apst.cpp; sourceTree = "<group>"; };
 		2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVMeFix.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FF3E71423AE1DA100D8CDEB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CE8DA0E02517E36C008C44E8 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = ../Lilu/MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2F77376023AE406400C87C16 /* libkmod.a in Frameworks */,
+				CE8DA0E12517E36C008C44E8 /* libkmod.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -96,12 +90,8 @@
 		2F77372E23AE401900C87C16 /* Library */ = {
 			isa = PBXGroup;
 			children = (
-				2F77372F23AE401900C87C16 /* libkmod.a */,
 				2F77373023AE401900C87C16 /* wrappers */,
-				2F77373523AE401900C87C16 /* security */,
-				2F77373923AE401900C87C16 /* LegacyLibkernMacros.h */,
 				2F77373A23AE401900C87C16 /* plugin_start.cpp */,
-				2F77373B23AE401900C87C16 /* LegacyIOService.h */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -117,21 +107,10 @@
 			path = wrappers;
 			sourceTree = "<group>";
 		};
-		2F77373523AE401900C87C16 /* security */ = {
-			isa = PBXGroup;
-			children = (
-				2F77373623AE401900C87C16 /* mac_framework.h */,
-				2F77373723AE401900C87C16 /* mac_policy.h */,
-				2F77373823AE401900C87C16 /* _label.h */,
-			);
-			path = security;
-			sourceTree = "<group>";
-		};
 		2F77373C23AE401900C87C16 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
 				2F77373D23AE401900C87C16 /* kern_config.hpp */,
-				2F77373E23AE401900C87C16 /* kern_atomic.hpp */,
 				2F77373F23AE401900C87C16 /* kern_time.hpp */,
 				2F77374023AE401900C87C16 /* kern_nvram.hpp */,
 				2F77374123AE401900C87C16 /* kern_cpu.hpp */,
@@ -179,6 +158,7 @@
 				2FF3E71123AE1DA100D8CDEB /* NVMeFix */,
 				2FF3E71023AE1DA100D8CDEB /* Products */,
 				2F77372D23AE401900C87C16 /* Lilu */,
+				CE8DA0DF2517E36C008C44E8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -205,6 +185,14 @@
 				2FF3E71423AE1DA100D8CDEB /* Info.plist */,
 			);
 			path = NVMeFix;
+			sourceTree = "<group>";
+		};
+		CE8DA0DF2517E36C008C44E8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CE8DA0E02517E36C008C44E8 /* libkmod.a */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -344,6 +332,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -398,6 +388,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				KERNEL_EXTENSION_HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
+				KERNEL_FRAMEWORK_HEADERS = "$(PROJECT_DIR)/MacKernelSDK/Headers";
 				MACOSX_DEPLOYMENT_TARGET = 10.14;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -431,7 +423,7 @@
 				INFOPLIST_FILE = NVMeFix/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Lilu.kext/Contents/Resources/Library",
+					"$(PROJECT_DIR)/MacKernelSDK/Library/x86_64",
 				);
 				MODULE_NAME = org.acidanthera.NVMeFix;
 				MODULE_START = NVMeFix_kern_start;
@@ -484,7 +476,7 @@
 				INFOPLIST_FILE = NVMeFix/Info.plist;
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Lilu.kext/Contents/Resources/Library",
+					"$(PROJECT_DIR)/MacKernelSDK/Library/x86_64",
 				);
 				LLVM_LTO = YES;
 				MODULE_NAME = org.acidanthera.NVMeFix;

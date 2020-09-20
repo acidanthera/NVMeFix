@@ -8,6 +8,7 @@ matrix:
     compiler: clang
 
     script:
+      - git clone https://github.com/acidanthera/MacKernelSDK
       - src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/bootstrap.sh) && eval "$src" || exit 1
       - xcodebuild -configuration Debug
       - xcodebuild -jobs 1 -configuration Release
@@ -27,6 +28,7 @@ matrix:
     compiler: clang
 
     script:
+      - git clone https://github.com/acidanthera/MacKernelSDK
       - src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/Lilu/master/Lilu/Scripts/bootstrap.sh) && eval "$src" || exit 1
       - xcodebuild analyze -quiet -scheme NVMeFix -configuration Debug CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
       - xcodebuild analyze -quiet -scheme NVMeFix -configuration Release CLANG_ANALYZER_OUTPUT=plist-html CLANG_ANALYZER_OUTPUT_DIR="$(pwd)/clang-analyze" && [ "$(find clang-analyze -name "*.html")" = "" ]
