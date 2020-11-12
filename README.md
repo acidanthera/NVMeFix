@@ -14,7 +14,7 @@ The following features are implemented:
 - Workaround for timeout panics on certain controllers (VMware, Samsung PM981).
 
 Other incompatibilities with third-party SSDs may be addressed provided enough information is
-submitted to the bugtracker.
+submitted to our [bugtracker](https://github.com/acidanthera/bugtracker).
 
 Unfortunately, some issues cannot be fixed purely by a kernel-side driver. For example, MacBookPro
 11,1 EFI includes an old version of NVMHCI DXE driver that causes a hang when resuming from
