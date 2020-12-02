@@ -1,7 +1,7 @@
 NVMeFix
 =======
 
-[![Build Status](https://travis-ci.com/acidanthera/NVMeFix.svg?branch=master)](https://travis-ci.com/acidanthera/NVMeFix)
+[![Build Status](https://github.com/acidanthera/NVMeFix/workflows/CI/badge.svg?branch=master)](https://github.com/acidanthera/NVMeFix/actions) [![Scan Status](https://scan.coverity.com/projects/22192/badge.svg?flat=1)](https://scan.coverity.com/projects/22192)
 
 NVMeFix is a set of patches for the Apple NVMe storage driver, IONVMeFamily.
 Its goal is to improve compatibility with non-Apple SSDs. It may be used both on Apple and non-Apple
