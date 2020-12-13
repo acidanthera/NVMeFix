@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.5
+- Fixed quirks enabling per controller
+
 #### v1.0.4
 - Added MacKernelSDK with Xcode 12 compatibility
 

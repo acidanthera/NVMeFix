@@ -322,7 +322,7 @@ nvme_quirks quirksForController(uint16_t vid, const char* mn, const char* fr) {
 	unsigned ret {NVME_QUIRK_NONE};
 
 	for (const auto& entry : core_quirks) {
-		auto match {false};
+		auto match {true};
 		match &= !entry.vid || entry.vid == vid;
 		match &= !entry.mn || !strcmp(entry.mn, mn);
 		match &= !entry.fr || !strcmp(entry.fr, fr);

@@ -45,7 +45,7 @@ private:
 	static bool terminatedNotificationHandler(void*, void*, IOService*, IONotifier*);
 	bool solveSymbols(KernelPatcher& kp);
 
-	atomic_bool solvedSymbols;
+	atomic_bool solvedSymbols = false;
 
 	IONotifier* matchingNotifier {nullptr}, * terminationNotifier {nullptr};
 
