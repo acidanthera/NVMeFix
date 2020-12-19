@@ -221,7 +221,7 @@
 		2FF3E70623AE1DA100D8CDEB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1220;
+				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = acidanthera;
 				TargetAttributes = {
 					2FF3E70E23AE1DA100D8CDEB = {

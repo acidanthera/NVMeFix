@@ -70,16 +70,18 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 
 	/* mov eax, [rdi+0xA8] */
 	res &= kextMembers.AppleNVMeRequest.result.fromFunc(kextFuncs.AppleNVMeRequest.GetStatus.fptr,
-														 0x8b, 0, 7, 4) &
+														 0x8b, 0, 7, 4) &&
 	/* movzx eax, byte ptr [rdi+0x10A] */
 		kextMembers.AppleNVMeRequest.command.fromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
-												  0xf, 0, 7) &
+												  0xf, 0, 7) &&
 	/* mov [rbx+0xC0], r12 */
 		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr,
-														0x89, 4, 3) &&
+														0x89, 4, 3);
+
 	/* cmp byte ptr [rdi+269h], 0 */
-		kextMembers.IONVMeController.ANS2MSIWorkaround.fromFunc(kextFuncs.IONVMeController.FilterInterruptRequest.fptr,
+	kextMembers.IONVMeController.ANS2MSIWorkaround.fromFunc(kextFuncs.IONVMeController.FilterInterruptRequest.fptr,
 																0x80, 7, 7, 0, 32);
+
 	if (res)
 		kextMembers.AppleNVMeRequest.controller.offs = kextMembers.AppleNVMeRequest.result.offs - 12;
 
@@ -195,7 +197,11 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	 * start of FilterIRQ instead so that FilterIRQ does not race with itself. This seems to eliminate
 	 * the timeouts.
 	 **/
-	kextMembers.IONVMeController.ANS2MSIWorkaround.get(entry.controller) = 1;
+	if (kextMembers.IONVMeController.ANS2MSIWorkaround.has()) {
+		kextMembers.IONVMeController.ANS2MSIWorkaround.get(entry.controller) = 1;
+	} else {
+		DBGLOG(Log::Plugin, "Ignoring ANS2 workaround patch on newer system");
+	}
 
 	/* First get quirks based on PCI device */
 	entry.quirks = NVMe::quirksForController(entry.controller);

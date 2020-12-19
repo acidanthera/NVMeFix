@@ -162,6 +162,10 @@ private:
 				return getMember<T>(obj, offs);
 			}
 
+			bool has() {
+				return offs != 0;
+			}
+
 			bool fromFunc(mach_vm_address_t start, uint32_t opcode, uint32_t reg, uint32_t rm,
 						  uint32_t add=0, size_t ninsts_max=128) {
 				if (offs)
