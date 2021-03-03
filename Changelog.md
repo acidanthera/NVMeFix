@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.6
+- Added APST workaround for Kingston A2000
+
 #### v1.0.5
 - Fixed quirks enabling per controller
 - Fixed initialisation on 10.15+
