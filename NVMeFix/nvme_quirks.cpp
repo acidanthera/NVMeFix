@@ -112,6 +112,8 @@ static constexpr struct pci_device_id nvme_id_table[] = {
 	{ 0x1cc1, 0x8201,   /* ADATA SX8200PNP 512GB */
 		NVME_QUIRK_NO_DEEPEST_PS |
 				NVME_QUIRK_IGNORE_DEV_SUBNQN, },
+	{ 0x2646, 0x2263,   /* Kingston A2000 */
+		NVME_QUIRK_NO_DEEPEST_PS, },
 
 	/* Should be taken care of by IONVMeFamily */
 #if 0
