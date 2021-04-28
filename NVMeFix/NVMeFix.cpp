@@ -57,7 +57,8 @@ void NVMeFixPlugin::processKext(void* that, KernelPatcher& patcher, size_t index
 bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	auto idx = plugin.kextInfo.loadIndex;
 	bool res = true;
-	res &= kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, idx) &&
+	res &= (kextFuncs.IONVMeController.IssueIdentifyCommandNew.solve(kp, idx) ||
+			kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, idx)) &&
 	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, idx) &&
 	kextFuncs.IONVMeController.GetRequest.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, idx) &&
@@ -75,7 +76,9 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 		kextMembers.AppleNVMeRequest.command.fromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
 												  0xf, 0, 7) &&
 	/* mov [rbx+0xC0], r12 */
-		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr,
+		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr ?
+															kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr :
+															kextFuncs.IONVMeController.IssueIdentifyCommand.fptr,
 														0x89, 4, 3);
 
 	/* cmp byte ptr [rdi+269h], 0 */
@@ -267,7 +270,10 @@ IOReturn NVMeFixPlugin::identify(ControllerEntry& entry, IOBufferMemoryDescripto
 	}
 	prepared = true;
 
-	ret = kextFuncs.IONVMeController.IssueIdentifyCommand(entry.controller, desc, nullptr, 0);
+	if (kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr)
+		ret = kextFuncs.IONVMeController.IssueIdentifyCommandNew(entry.controller, desc, 0, false);
+	else
+		ret = kextFuncs.IONVMeController.IssueIdentifyCommand(entry.controller, desc, nullptr, 0);
 	if (ret != kIOReturnSuccess) {
 		SYSLOG(Log::Plugin, "issueIdentifyCommand failed");
 		goto fail;

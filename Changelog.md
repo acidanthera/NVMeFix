@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.7
+- Fixed symbol solving on macOS 11.3
+
 #### v1.0.6
 - Added APST workaround for Kingston A2000
 

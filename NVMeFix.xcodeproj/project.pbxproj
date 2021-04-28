@@ -62,6 +62,7 @@
 		2FF27FCC23C8B73A00BE79E3 /* nvme_apst.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = nvme_apst.cpp; sourceTree = "<group>"; };
 		2FF3E70F23AE1DA100D8CDEB /* NVMeFix.kext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NVMeFix.kext; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FF3E71423AE1DA100D8CDEB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CE7908D6263A27FA00482EE3 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
 		CE8DA0E02517E36C008C44E8 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = ../Lilu/MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -155,6 +156,7 @@
 		2FF3E70523AE1DA100D8CDEB = {
 			isa = PBXGroup;
 			children = (
+				CE7908D6263A27FA00482EE3 /* Changelog.md */,
 				2FF3E71123AE1DA100D8CDEB /* NVMeFix */,
 				2FF3E71023AE1DA100D8CDEB /* Products */,
 				2F77372D23AE401900C87C16 /* Lilu */,
@@ -221,7 +223,7 @@
 		2FF3E70623AE1DA100D8CDEB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1250;
 				ORGANIZATIONNAME = acidanthera;
 				TargetAttributes = {
 					2FF3E70E23AE1DA100D8CDEB = {

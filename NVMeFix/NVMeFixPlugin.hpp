@@ -73,8 +73,10 @@ private:
 
 			bool solve(KernelPatcher& kp, size_t idx) {
 				/* Cache the result */
-				if (!fptr)
+				if (!fptr) {
 					fptr = kp.solveSymbol(idx, name);
+					DBGLOG_COND(fptr == 0, Log::Plugin, "Failed to solve %s", name);
+				}
 				return fptr;
 			}
 
@@ -101,6 +103,10 @@ private:
 		struct {
 			Func<IOReturn,void*,IOMemoryDescriptor*,void*,uint64_t> IssueIdentifyCommand {
 				"__ZN16IONVMeController20IssueIdentifyCommandEP18IOMemoryDescriptorP16AppleNVMeRequestj"
+			};
+
+			Func<IOReturn,void*,IOMemoryDescriptor*,unsigned int, bool> IssueIdentifyCommandNew {
+				"__ZN16IONVMeController20IssueIdentifyCommandEP18IOMemoryDescriptorjb"
 			};
 
 			Func<IOReturn,void*,void*> ProcessSyncNVMeRequest {
