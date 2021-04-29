@@ -37,6 +37,7 @@ Configuration
 
 `-nvmefaspm` forces ASPM L1 on all the devices. This argument is recommended exclusively for testing purposes,
 as for daily usage one could inject `pci-aspm-default` device property with `<02 00 00 00>` value into the SSD devices and bridge devices they are connected to onboard.
+Updated values will be visible as `pci-aspm-custom` in the affected devices.
 
 Some SSDs misbehave when APST is on. NVMeFix attempts to detect broken motherboard and SSD
 combinations and work around them. Motherboard is detected via IORegistry keys injected by Clover,

@@ -202,7 +202,9 @@ void NVMeFixPlugin::forceEnableASPM(IOService *device) {
 
 	auto linkControl = pci->configRead16(space, offset);
 	pci->configWrite16(space, offset, (linkControl & ~ASPM_Mask) | ASPM_L1EntryEnabled);
-	DBGLOG(Log::Plugin, "ASPM transition on %s from %X to %X", safeString(device->getName()), linkControl, pci->configRead16(space, offset));
+	auto newLinkControl = pci->configRead16(space, offset);
+	DBGLOG(Log::Plugin, "ASPM transition on %s from %X to %X", safeString(device->getName()), linkControl, newLinkControl);
+	pci->setProperty("pci-aspm-custom", newLinkControl, 32);
 }
 
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
