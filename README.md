@@ -26,7 +26,7 @@ Installation
 NVMeFix requires at least Lilu 1.4.1 and at least 10.14 system version. It may be compatible with
 older systems, but has not been tested.
 
-It may be installed to `/Library/Extensions`, or injected by the bootloader.
+It may be installed to `/Library/Extensions` on 10.15 and earlier, or injected by the bootloader on all versions.
 
 Configuration
 -------------
@@ -34,6 +34,9 @@ Configuration
 `-nvmefdbg` enables detailed logging for `DEBUG` build.
 
 `-nvmefoff` disables the kext.
+
+`-nvmefaspm` forces ASPM L1 on all the devices. This argument is recommended exclusively for testing purposes,
+as for daily usage one could inject `pci-aspm-default` device property with `<02 00 00 00>` value into the SSD devices and bridge devices they are connected to onboard.
 
 Some SSDs misbehave when APST is on. NVMeFix attempts to detect broken motherboard and SSD
 combinations and work around them. Motherboard is detected via IORegistry keys injected by Clover,

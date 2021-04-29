@@ -64,6 +64,7 @@
 		2FF3E71423AE1DA100D8CDEB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE7908D6263A27FA00482EE3 /* Changelog.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Changelog.md; sourceTree = "<group>"; };
 		CE8DA0E02517E36C008C44E8 /* libkmod.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libkmod.a; path = ../Lilu/MacKernelSDK/Library/x86_64/libkmod.a; sourceTree = "<group>"; };
+		CE9EE6EF263AF4E700D750F5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -156,6 +157,7 @@
 		2FF3E70523AE1DA100D8CDEB = {
 			isa = PBXGroup;
 			children = (
+				CE9EE6EF263AF4E700D750F5 /* README.md */,
 				CE7908D6263A27FA00482EE3 /* Changelog.md */,
 				2FF3E71123AE1DA100D8CDEB /* NVMeFix */,
 				2FF3E71023AE1DA100D8CDEB /* Products */,

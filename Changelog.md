@@ -2,6 +2,7 @@ NVMeFix Changelog
 =================
 #### v1.0.7
 - Fixed symbol solving on macOS 11.3
+- Added `-nvmefaspm` boot argument to force ASPM L1 on all NVMe SSDs
 
 #### v1.0.6
 - Added APST workaround for Kingston A2000

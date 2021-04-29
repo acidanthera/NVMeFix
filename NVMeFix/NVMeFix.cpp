@@ -15,6 +15,8 @@
 #include <IOKit/IOService.h>
 #include <IOKit/IODMACommand.h>
 #include <IOKit/IOKitKeys.h>
+#include <IOKit/IODeviceTreeSupport.h>
+#include <IOKit/pci/IOPCIDevice.h>
 #include <kern/assert.h>
 #include <libkern/c++/OSMetaClass.h>
 
@@ -165,6 +167,44 @@ void NVMeFixPlugin::handleControllers() {
 	}
 }
 
+void NVMeFixPlugin::forceEnableASPM(IOService *device) {
+	IOPCIDevice *pci = static_cast<IOPCIDevice *>(device->metaCast("IOPCIDevice"));
+	if (!pci) return;
+
+	uint32_t aspm = 0;
+	auto prop = device->getProperty("pci-aspm-default");
+	if (prop) {
+		auto num = OSDynamicCast(OSNumber, prop);
+		if (num) {
+			aspm = num->unsigned32BitValue();
+		} else {
+			auto data = OSDynamicCast(OSData, prop);
+			if (data && data->getLength() == sizeof(aspm))
+				lilu_os_memcpy(&aspm, data->getBytesNoCopy(), sizeof(aspm));
+		}
+	}
+
+	DBGLOG(Log::Plugin, "Activating ASPM on %s, currently %X", safeString(device->getName()), aspm);
+
+	// Do not repeat what is already done.
+	if ((aspm & ASPM_Mask) == ASPM_L1EntryEnabled) return;
+
+	UInt8 offset = 0;
+	if (!pci->findPCICapability(kIOPCICapabilityIDPCIExpress, &offset)) {
+		SYSLOG(Log::Plugin, "NO PCIe capability support on %s", safeString(device->getName()));
+		return;
+	}
+
+	offset += 0x10; // link control offset.
+
+	IOPCIAddressSpace space = pci->space;
+	space.es.registerNumExtended = 0;
+
+	auto linkControl = pci->configRead16(space, offset);
+	pci->configWrite16(space, offset, (linkControl & ~ASPM_Mask) | ASPM_L1EntryEnabled);
+	DBGLOG(Log::Plugin, "ASPM transition on %s from %X to %X", safeString(device->getName()), linkControl, pci->configRead16(space, offset));
+}
+
 void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 	assert(entry.controller);
 
@@ -180,7 +220,20 @@ void NVMeFixPlugin::handleController(ControllerEntry& entry) {
 		SYSLOG(Log::Plugin, "Ignoring Apple controller");
 		return;
 	}
-	
+
+	/**
+	 * Force enable ASPM when the user cannot provide device properties.
+	 */
+	if (checkKernelArgument("-nvmefaspm")) {
+		auto ssd = OSDynamicCast(IOService, entry.controller->getParentEntry(gIOServicePlane));
+		if (ssd) {
+			forceEnableASPM(ssd);
+			auto bridge = OSDynamicCast(IOService, ssd->getParentEntry(gIODTPlane));
+			if (bridge)
+				forceEnableASPM(bridge);
+		}
+	}
+
 	/**
 	 * Force enable ANS2MSIWorkaround.
 	 *

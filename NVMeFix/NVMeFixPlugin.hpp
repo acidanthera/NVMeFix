@@ -65,6 +65,14 @@ private:
 		KernelPatcher::KextInfo::Unloaded
 	};
 
+	enum {
+	    ASPM_L0sAndL1EntryDisabled = 0,
+		ASPM_L0sEntryEnabled       = 1,
+		ASPM_L1EntryEnabled        = 2,
+		ASPM_L0sAndL1EntryEnabled  = 3,
+		ASPM_Mask = ASPM_L0sAndL1EntryEnabled
+	};
+
 	struct {
 		template <typename T, typename... Args>
 		struct Func {
@@ -269,6 +277,7 @@ private:
 
 	evector<ControllerEntry*, ControllerEntry::deleter> controllers;
 	void handleControllers();
+	void forceEnableASPM(IOService*);
 	void handleController(ControllerEntry&);
 	IOReturn identify(ControllerEntry&,IOBufferMemoryDescriptor*&);
 	bool enableAPST(ControllerEntry&, const NVMe::nvme_id_ctrl*);
