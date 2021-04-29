@@ -175,11 +175,11 @@ void NVMeFixPlugin::forceEnableASPM(IOService *device) {
 	auto prop = device->getProperty("pci-aspm-default");
 	if (prop) {
 		auto num = OSDynamicCast(OSNumber, prop);
-		if (num) {
+		if (num != nullptr) {
 			aspm = num->unsigned32BitValue();
 		} else {
 			auto data = OSDynamicCast(OSData, prop);
-			if (data && data->getLength() == sizeof(aspm))
+			if (data != nullptr && data->getLength() == sizeof(aspm))
 				lilu_os_memcpy(&aspm, data->getBytesNoCopy(), sizeof(aspm));
 		}
 	}
