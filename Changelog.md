@@ -2,6 +2,7 @@ NVMeFix Changelog
 =================
 #### v1.0.8
 - Fixed applying quirks based on the disk name and serial
+- Make Kingston A2000 quirk specific to S5Z42105
 
 #### v1.0.7
 - Fixed symbol solving on macOS 11.3
