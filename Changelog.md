@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.8
+- Fixed applying quirks based on the disk name and serial
+
 #### v1.0.7
 - Fixed symbol solving on macOS 11.3
 - Added `-nvmefaspm` boot argument to force ASPM L1 on all NVMe SSDs
