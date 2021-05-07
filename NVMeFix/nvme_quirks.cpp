@@ -320,14 +320,34 @@ static const struct nvme_core_quirk_entry core_quirks[] = {
 	}
 };
 
-nvme_quirks quirksForController(uint16_t vid, const char* mn, const char* fr) {
+template <size_t S>
+static bool id_ctrl_match(const char* str, const char (&id_str)[S]) {
+	if (str == nullptr)
+		return true;
+
+	/* Strings in the core quirk table end with NULL */
+	auto i = strlen(str);
+
+	if (i > S || memcmp(str, id_str, i))
+		return false;
+
+	/* Controller identity strings in struct nvme_id_ctrl are padded with spaces */
+	while (i < S) {
+		if (id_str[i++] != 0x20)
+			return false;
+	}
+
+	return true;
+}
+
+nvme_quirks quirksForController(uint16_t vid, mn_ref_t mn, fr_ref_t fr) {
 	unsigned ret {NVME_QUIRK_NONE};
 
 	for (const auto& entry : core_quirks) {
 		auto match {true};
 		match &= !entry.vid || entry.vid == vid;
-		match &= !entry.mn || !strcmp(entry.mn, mn);
-		match &= !entry.fr || !strcmp(entry.fr, fr);
+		match &= id_ctrl_match(entry.mn, mn);
+		match &= id_ctrl_match(entry.fr, fr);
 
 		if (match)
 			ret |= entry.quirks;
