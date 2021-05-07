@@ -112,8 +112,6 @@ static constexpr struct pci_device_id nvme_id_table[] = {
 	{ 0x1cc1, 0x8201,   /* ADATA SX8200PNP 512GB */
 		NVME_QUIRK_NO_DEEPEST_PS |
 				NVME_QUIRK_IGNORE_DEV_SUBNQN, },
-	{ 0x2646, 0x2263,   /* Kingston A2000 */
-		NVME_QUIRK_NO_DEEPEST_PS, },
 
 	/* Should be taken care of by IONVMeFamily */
 #if 0
@@ -317,7 +315,18 @@ static const struct nvme_core_quirk_entry core_quirks[] = {
 		nullptr,
 		"E8FK11",
 		NVME_QUIRK_SIMPLE_SUSPEND,
-	}
+	},
+	{
+		/*
+		 * Kingston A2000 devices with 5Z42105 firmware can become
+		 * unresponsive after entering the deepest power state
+		 * https://lore.kernel.org/linux-nvme/20210129052442.310780-1-linux@leemhuis.info/
+		 */
+		0x2646,
+		nullptr,
+		"S5Z42105",
+		NVME_QUIRK_NO_DEEPEST_PS,
+	},
 };
 
 template <size_t S>
