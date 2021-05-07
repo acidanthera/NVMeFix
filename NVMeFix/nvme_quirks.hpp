@@ -135,8 +135,10 @@ constexpr nvme_quirks operator&=(T& a, T b) {
 	return a;
 }
 
+using mn_ref_t = const char(&)[40];
+using fr_ref_t = const char(&)[8];
 nvme_quirks quirksForController(IOService*);
-nvme_quirks quirksForController(uint16_t,const char*,const char*);
+nvme_quirks quirksForController(uint16_t,mn_ref_t,fr_ref_t);
 }
 
 template <typename T>
