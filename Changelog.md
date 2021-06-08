@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.0.9
+- Added constants for 12.0 support
+
 #### v1.0.8
 - Fixed applying quirks based on the disk name and serial
 - Make Kingston A2000 quirk specific to S5Z42105
