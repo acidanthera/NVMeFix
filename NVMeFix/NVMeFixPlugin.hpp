@@ -121,8 +121,11 @@ private:
 				"__ZN16IONVMeController22ProcessSyncNVMeRequestEP16AppleNVMeRequest"
 			};
 
-			Func<void*,void*,uint64_t> GetRequest {
+			Func<void*,void*,uint32_t> GetRequest {
 				"__ZN16IONVMeController10GetRequestEj"
+			};
+			Func<void*,void*,uint32_t, uint8_t> GetRequestNew {
+				"__ZN16IONVMeController10GetRequestEjh"
 			};
 			Func<void,void*,void*> ReturnRequest {
 				"__ZN16IONVMeController13ReturnRequestEP16AppleNVMeRequest"

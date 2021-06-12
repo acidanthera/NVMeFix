@@ -62,7 +62,8 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	res &= (kextFuncs.IONVMeController.IssueIdentifyCommandNew.solve(kp, idx) ||
 			kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, idx)) &&
 	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, idx) &&
-	kextFuncs.IONVMeController.GetRequest.solve(kp, idx) &&
+	(kextFuncs.IONVMeController.GetRequest.solve(kp, idx) ||
+	 kextFuncs.IONVMeController.GetRequestNew.solve(kp, idx)) &&
 	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(kp, idx) &&
 	kextFuncs.IONVMeController.ReturnRequest.solve(kp, idx) &&
@@ -353,7 +354,11 @@ IOReturn NVMeFixPlugin::NVMeFeatures(ControllerEntry& entry, unsigned fid, unsig
 	}
 
 	if (!desc || prepared) {
-		auto req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1); /* Set 0b10 to tickle */
+		void *req;
+		if (kextFuncs.IONVMeController.GetRequestNew.fptr)
+			req = kextFuncs.IONVMeController.GetRequestNew(entry.controller, 1, 0); /* Set 0b10 to tickle */
+		else
+			req = kextFuncs.IONVMeController.GetRequest(entry.controller, 1); /* Set 0b10 to tickle */
 
 		if (!req) {
 			DBGLOG(Log::Feature, "IONVMeController::GetRequest failed");
