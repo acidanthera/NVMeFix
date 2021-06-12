@@ -2,6 +2,7 @@ NVMeFix Changelog
 =================
 #### v1.0.9
 - Added constants for macOS 12 support
+- Fixed macOS 12 compatibility
 
 #### v1.0.8
 - Fixed applying quirks based on the disk name and serial

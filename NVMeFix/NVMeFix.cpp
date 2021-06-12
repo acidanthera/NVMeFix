@@ -62,8 +62,8 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	res &= (kextFuncs.IONVMeController.IssueIdentifyCommandNew.solve(kp, idx) ||
 			kextFuncs.IONVMeController.IssueIdentifyCommand.solve(kp, idx)) &&
 	kextFuncs.IONVMeController.ProcessSyncNVMeRequest.solve(kp, idx) &&
-	(kextFuncs.IONVMeController.GetRequest.solve(kp, idx) ||
-	 kextFuncs.IONVMeController.GetRequestNew.solve(kp, idx)) &&
+	(kextFuncs.IONVMeController.GetRequestNew.solve(kp, idx) ||
+	 kextFuncs.IONVMeController.GetRequest.solve(kp, idx)) &&
 	kextFuncs.AppleNVMeRequest.BuildCommandGetFeatures.solve(kp, idx) &&
 	kextFuncs.AppleNVMeRequest.BuildCommandSetFeaturesCommon.solve(kp, idx) &&
 	kextFuncs.IONVMeController.ReturnRequest.solve(kp, idx) &&
