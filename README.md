@@ -20,6 +20,32 @@ Unfortunately, some issues cannot be fixed purely by a kernel-side driver. For e
 11,1 EFI includes an old version of NVMHCI DXE driver that causes a hang when resuming from
 hibernaton with full disk encryption on.
 
+Compatibility
+-------------
+
+**Please note other SSDs may not work with this kext**
+
+| Vendor ID 	| Device ID 	| Description 	|
+|---	|---	|---	|
+| `0x8086` 	| `0x0953` 	| Intel PCIe Data Center SSD 	|
+| `0x8086` 	| `0x0A53` 	| Intel DC P3520 SSD 	|
+| `0x8086` 	| `0x0A54` 	| Intel NVMe Datacenter SSD [3DNAND, Beta Rock Controller] 	|
+| `0x8086` 	| `0x0A55` 	| Intel NVMe DC SSD [3DNAND, Beta Rock Controller] 	|
+| `0x8086` 	| `0xF1A5` 	| Intel SSD 600P Series 	|
+| `0x8086` 	| `0xF1A6` 	| Intel SSD Pro 7600p/760p/E 6100p Series 	|
+| `0x8086` 	| `0x5845` 	| QEMU NVM Express Controller 	|
+| `0x1BB1` 	| `0x0100` 	| Nytro Flash Storage 	|
+| `0x1C58` 	| `0x0003` 	| Ultrastar SN100 Series NVMe SSD 	|
+| `0x1C58` 	| `0x0023` 	| Ultrastar SN200 Series NVMe SSD 	|
+| `0x15CF` 	| `0x0540` 	| PBlaze4 NVMe SSD 	|
+| `0x144D` 	| `0xA821` 	| NVMe SSD Controller 172X 	|
+| `0x144D` 	| `0xA822` 	| NVMe SSD Controller 172Xa/172Xb 	|
+| `0x1D1D` 	| `0x1F1F` 	| QEMU NVM Express LightNVM Controller 	|
+| `0x1D1D` 	| `0x2807` 	| 8800 series NVMe SSD 	|
+| `0x1D1D` 	| `0x2601` 	| CNEX Granby 	|
+| `0x10EC` 	| `0x5762` 	| ADATA SX6000LNP (RTS5763DL NVMe SSD Controller) 	|
+| `0x1cc1` 	| `0x8201` 	| ADATA XPG SX8200 Pro PCIe Gen3x4 M.2 2280 Solid State Drive 	|
+
 Installation
 ------------
 
