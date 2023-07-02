@@ -78,9 +78,9 @@ bool NVMeFixPlugin::solveSymbols(KernelPatcher& kp) {
 	/* movzx eax, byte ptr [rdi+0x10A] */
 		kextMembers.AppleNVMeRequest.command.fromFunc(kextFuncs.AppleNVMeRequest.GetOpcode.fptr,
 												  0xf, 0, 7) &&
-	/* mov [rbx+0xC0], r12 or mov [rbx+0xC0], r15 */
+	/* mov [r14+0xC0], r15 (14.0+) or mov [rbx+0xC0], r15 (11.3-13.x) or mov [rbx+0xC0], r12 (<=11.2) */
 		(kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr ?
-		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr, 0x89, 7, 3) :
+		kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommandNew.fptr, 0x89, 7, getKernelVersion() >= KernelVersion::Sonoma ? 14 : 3) :
 		 kextMembers.AppleNVMeRequest.prpDescriptor.fromFunc(kextFuncs.IONVMeController.IssueIdentifyCommand.fptr, 0x89, 4, 3));
 
 	/* cmp byte ptr [rdi+269h], 0 */
@@ -514,7 +514,7 @@ PluginConfiguration ADDPR(config) {
 	nullptr,
 	0,
 	KernelVersion::Mojave,
-	KernelVersion::Ventura,
+	KernelVersion::Sonoma,
 	[]() {
 		NVMeFixPlugin::globalPlugin().init();
 	}

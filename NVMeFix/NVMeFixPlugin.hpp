@@ -203,7 +203,7 @@ private:
 					}
 
 					/* mov reg, [reg+disp] */
-					if (dis.opcode == opcode && dis.modrm_reg == reg && dis.modrm_rm == rm) {
+					if (dis.opcode == opcode && dis.modrm_reg == reg && dis.modrm_rm == (rm & 7) && dis.rex_b == ((rm & 8) >> 3)) {
 						offs = dis.disp.disp32 + add;
 						DBGLOG(Log::Disasm, "Offset 0x%x for %s", offs, name);
 						return true;
