@@ -3,7 +3,7 @@ NVMeFix
 
 [![Build Status](https://github.com/acidanthera/NVMeFix/workflows/CI/badge.svg?branch=master)](https://github.com/acidanthera/NVMeFix/actions) [![Scan Status](https://scan.coverity.com/projects/22192/badge.svg?flat=1)](https://scan.coverity.com/projects/22192)
 
-***NOTE***: NVMeFix supports up to macOS Sequoia (15), but some features might not be available on newer versions as of now, like the timeout panic fix and has not been tested.
+***NOTE***: NVMeFix supports up to macOS Sequoia (15), but it hasn't been tested; some features might not be available on newer versions as of now, like the timeout panic fix.
 
 NVMeFix is a set of patches for the Apple NVMe storage driver, IONVMeFamily.
 Its goal is to improve compatibility with non-Apple SSDs. It may be used both on Apple and non-Apple
