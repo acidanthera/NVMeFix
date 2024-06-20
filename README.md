@@ -20,7 +20,7 @@ submitted to our [bugtracker](https://github.com/acidanthera/bugtracker).
 
 Unfortunately, some issues cannot be fixed purely by a kernel-side driver. For example, MacBookPro
 11,1 EFI includes an old version of NVMHCI DXE driver that causes a hang when resuming from
-hibernaton with full disk encryption on.
+hibernation with full disk encryption on.
 
 Installation
 ------------
