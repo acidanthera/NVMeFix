@@ -1,5 +1,8 @@
 NVMeFix Changelog
 =================
+#### v1.1.2
+- Added constants for macOS 15 support
+  
 #### v1.1.1
 - Added constants for macOS 14 support
 - Fixed macOS 14 compatibility
