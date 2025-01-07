@@ -1,7 +1,7 @@
 NVMeFix
 =======
 
-[![Build Status](https://github.com/acidanthera/NVMeFix/workflows/CI/badge.svg?branch=master)](https://github.com/acidanthera/NVMeFix/actions) [![Scan Status](https://scan.coverity.com/projects/22192/badge.svg?flat=1)](https://scan.coverity.com/projects/22192)
+[![Build Status](https://github.com/acidanthera/NVMeFix/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/acidanthera/NVMeFix/actions) [![Scan Status](https://scan.coverity.com/projects/22192/badge.svg?flat=1)](https://scan.coverity.com/projects/22192)
 
 ***NOTE***: NVMeFix supports up to macOS Sequoia (15), some features might not be available on newer versions as of now, like the timeout panic fix.
 
