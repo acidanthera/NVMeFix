@@ -514,7 +514,7 @@ PluginConfiguration ADDPR(config) {
 	nullptr,
 	0,
 	KernelVersion::Mojave,
-	KernelVersion::Sequoia,
+	KernelVersion::Tahoe,
 	[]() {
 		NVMeFixPlugin::globalPlugin().init();
 	}
